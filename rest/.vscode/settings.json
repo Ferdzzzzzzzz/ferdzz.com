@@ -1,0 +1,19 @@
+{
+    "editor.rulers": [
+        80
+    ],
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#ff4081"
+    },
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/.gitignore": false,
+        "**/.dockerignore": false,
+        "**/coverage": true,
+        "**/vendor": false,
+        "go.sum": true,
+        "go.mod": false,
+    }
+}
