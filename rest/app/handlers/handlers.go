@@ -2,11 +2,8 @@ package handlers
 
 import (
 	"context"
-	"errors"
-	"fmt"
 	"net/http"
 	"os"
-	"time"
 
 	"github.com/ferdzzzzzzzz/ferdzz/business/mid"
 	"github.com/ferdzzzzzzzz/ferdzz/foundation/web"
@@ -27,31 +24,22 @@ func APIMux(conf APIMuxConfig) *web.App {
 		mid.Panics(),
 	)
 
-	app.Handle(http.MethodGet, "/user/{userID}", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	//==========================================================================
+	// File Server for /public route
 
-		q, ok := web.QueryParam(r, "filter")
-		if !ok {
-			fmt.Println("NOT OK")
-		} else {
-			fmt.Println(q)
-		}
+	app.ServeFiles("./public/")
 
-		id, ok := web.PathParam(r, "userID")
-		if !ok {
-			fmt.Println("wtf")
-			return errors.New("housten, we have a big fuckin problem")
-		}
-		fmt.Println(id)
+	// =========================================================================
+	// Resources
 
-		time.Sleep(1 * time.Second)
+	app.Handle(http.MethodGet, "/user/{userID}", userRoute)
 
-		return web.Respond(ctx, w, "Hello World", http.StatusOK)
-	})
+	// =========================================================================
+	// Views
 
-	app.Handle(http.MethodPost, "/user/{userID}", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+	viewRoutes := newViewRoutes()
 
-		return web.Respond(ctx, w, "Hello From Post World", http.StatusOK)
-	})
+	app.Handle(http.MethodGet, "/", viewRoutes.home)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.

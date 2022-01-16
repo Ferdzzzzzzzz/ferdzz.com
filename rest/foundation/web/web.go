@@ -3,6 +3,7 @@ package web
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 	"syscall"
@@ -72,4 +73,37 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 	}
 
 	a.mux.HandleFunc(path, h).Methods(method)
+}
+
+func (a *App) ServeFiles(path string, mw ...Middleware) {
+
+	handler := func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+		fs := http.FileServer(http.Dir(path))
+		fs.ServeHTTP(w, r)
+		return nil
+	}
+
+	handler = wrapMiddleware(mw, handler)
+	handler = wrapMiddleware(a.mw, handler)
+
+	h := func(w http.ResponseWriter, r *http.Request) {
+		ctx := r.Context()
+
+		v := Values{
+			TraceID: uuid.New().String(),
+			Now:     time.Now(),
+		}
+
+		ctx = context.WithValue(ctx, key, &v)
+
+		err := handler(ctx, w, r)
+		if err != nil {
+			a.SignalShutdown()
+			return
+		}
+	}
+
+	fmt.Println("registering")
+
+	a.mux.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.HandlerFunc(h)))
 }
