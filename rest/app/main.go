@@ -135,7 +135,10 @@ func run(log *zap.SugaredLogger) error {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	// Construct a mux for the api calls.
-	apiMux := handlers.APIMux(handlers.APIMuxConfig{})
+	apiMux := handlers.APIMux(handlers.APIMuxConfig{
+		Shutdown: shutdown,
+		Log:      log,
+	})
 
 	// Construct a server to service the requests against the mux.
 	api := http.Server{
