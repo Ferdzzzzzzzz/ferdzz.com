@@ -13,17 +13,19 @@ import (
 
 	"github.com/ardanlabs/conf"
 	"github.com/ferdzzzzzzzz/ferdzz/app/handlers"
-	"github.com/ferdzzzzzzzz/ferdzz/foundation/logger"
+	"github.com/ferdzzzzzzzz/ferdzz/core/logger"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
 
-// build is the git version of this program. It is set using build flags in the makefile.
+// build is the git version of this program. It is set using build flags in the
+// makefile.
 var build = "develop"
 
 func main() {
 	// add flag to allow unstructured logs
-	sugar := logger.NewDev("api.ferdzz.com")
+	sugar := logger.NewDev("ferdzz.com")
+
 	defer sugar.Sync()
 
 	err := run(sugar)

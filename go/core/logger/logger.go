@@ -17,7 +17,7 @@ func New(service string) *zap.SugaredLogger {
 	config.OutputPaths = []string{"stdout"}
 	config.EncoderConfig.EncodeTime = zapcore.EpochTimeEncoder
 	config.DisableStacktrace = true
-	config.InitialFields = map[string]interface{}{"service": "api.ferdzz.com"}
+	config.InitialFields = map[string]interface{}{"service": service}
 
 	log, err := config.Build()
 	if err != nil {
@@ -34,6 +34,7 @@ func New(service string) *zap.SugaredLogger {
 // a console friendly way.
 func NewDev(service string) *zap.SugaredLogger {
 	config := zap.NewDevelopmentEncoderConfig()
+
 	encoder := zapcore.NewConsoleEncoder(config)
 
 	log := zap.New(zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), zapcore.DebugLevel)).Sugar()
@@ -49,6 +50,7 @@ func NewTest(service string) (*zap.SugaredLogger, func() string) {
 
 	config := zap.NewDevelopmentEncoderConfig()
 	encoder := zapcore.NewConsoleEncoder(config)
+
 	writer := bufio.NewWriter(&buf)
 
 	log := zap.New(zapcore.NewCore(encoder, zapcore.AddSync(writer), zapcore.DebugLevel)).Sugar()

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"runtime/debug"
 
-	"github.com/ferdzzzzzzzz/ferdzz/foundation/web"
+	"github.com/ferdzzzzzzzz/ferdzz/core/web"
 )
 
 // Panics recovers from panics and converts the panic to an error

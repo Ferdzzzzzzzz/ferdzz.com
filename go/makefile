@@ -9,3 +9,6 @@ style:
 tidy:
 	@go mod tidy
 	@go mod vendor
+
+build-logfmt:
+	@go build ./utils/logFmt

@@ -3,7 +3,6 @@ package web
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 	"syscall"
@@ -102,8 +101,6 @@ func (a *App) ServeFiles(path string, mw ...Middleware) {
 			return
 		}
 	}
-
-	fmt.Println("registering")
 
 	a.mux.PathPrefix("/public").Handler(http.StripPrefix("/public/", http.HandlerFunc(h)))
 }

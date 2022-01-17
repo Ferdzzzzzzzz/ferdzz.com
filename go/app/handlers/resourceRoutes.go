@@ -7,10 +7,13 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/ferdzzzzzzzz/ferdzz/foundation/web"
+	"github.com/ferdzzzzzzzz/ferdzz/core/web"
 )
 
 func userRoute(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+
+	fmt.Println(r.Cookie("AUTH"))
+	fmt.Println("==========")
 
 	q, ok := web.QueryParam(r, "filter")
 	if !ok {

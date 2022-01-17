@@ -6,7 +6,7 @@ import (
 	"os"
 
 	"github.com/ferdzzzzzzzz/ferdzz/business/mid"
-	"github.com/ferdzzzzzzzz/ferdzz/foundation/web"
+	"github.com/ferdzzzzzzzz/ferdzz/core/web"
 	"go.uber.org/zap"
 )
 
@@ -24,22 +24,10 @@ func APIMux(conf APIMuxConfig) *web.App {
 		mid.Panics(),
 	)
 
-	//==========================================================================
-	// File Server for /public route
-
-	app.ServeFiles("./public/")
-
 	// =========================================================================
 	// Resources
 
 	app.Handle(http.MethodGet, "/user/{userID}", userRoute)
-
-	// =========================================================================
-	// Views
-
-	viewRoutes := newViewRoutes()
-
-	app.Handle(http.MethodGet, "/", viewRoutes.home)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.
 	// Don't forget to apply the CORS middleware to the routes that need it.
