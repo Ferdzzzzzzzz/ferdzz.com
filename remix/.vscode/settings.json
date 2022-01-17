@@ -1,0 +1,23 @@
+{
+    // "editor.rulers": [80],
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#ff4081"
+    },
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/lib": true,
+        "**/.gitignore": false,
+        "**/node_modules": true,
+        "**/build": true,
+        "**/dist": true,
+        "**/.mf": true,
+        "**/.cache": true,
+        "package-lock.json": true,
+        "tsconfig.json": true,
+        "wrangler.toml": true,
+        "remix.env.d.ts": true,
+        ".prettierrc": true,
+    }
+}

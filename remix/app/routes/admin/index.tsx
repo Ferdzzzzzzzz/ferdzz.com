@@ -1,9 +1,28 @@
-import {LoaderFunction, redirect} from 'remix'
+import {LoaderFunction, useLoaderData} from 'remix'
 
 export const loader: LoaderFunction = async () => {
-  return redirect('/signin')
+  let res = await fetch('http://localhost:3000/user/123')
+  let data = await res.json()
+
+  return data
 }
 
 export default function Admin() {
-  return <div className="w-40 h-40 bg-sky-400">Admin Route</div>
+  let data = useLoaderData()
+  return (
+    <div className="w-40 h-40 bg-sky-400">
+      <h1>Admin Route</h1>
+      <p>{data}</p>
+    </div>
+  )
+}
+
+export const ErrorBoundary = () => {
+  return (
+    <div className="p-20">
+      <div className="bg-red-100 text-red-800 border border-red-800 w-40 p-4 rounded">
+        Hey we caught an error for you!
+      </div>
+    </div>
+  )
 }
