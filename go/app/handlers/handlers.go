@@ -14,15 +14,27 @@ type APIMuxConfig struct {
 	Shutdown   chan os.Signal
 	Log        *zap.SugaredLogger
 	CorsOrigin string
+	DevMode    bool
 }
 
 func APIMux(conf APIMuxConfig) *web.App {
+
+	if conf.DevMode {
+		conf.Log.Warn("================================================================")
+		conf.Log.Warn("Development Mode Enabled")
+		conf.Log.Warn("================================================================")
+
+	}
+
 	app := web.NewApp(
 		conf.Shutdown,
+		conf.DevMode,
 		mid.Logger(conf.Log),
 		mid.Errors(conf.Log),
 		mid.Panics(),
 	)
+
+	app.DevMiddleware(mid.Latency(conf.Log))
 
 	// =========================================================================
 	// Resources

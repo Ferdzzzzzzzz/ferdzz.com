@@ -27,10 +27,12 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 			}
 
 			// Run the next handler and catch any propagated error.
-			if err := handler(ctx, w, r); err != nil {
+			handlerErr := handler(ctx, w, r)
+
+			if handlerErr != nil {
 
 				// Log the error.
-				log.Errorw("ERROR", "traceid", v.TraceID, "ERROR", err)
+				log.Errorw("ERROR", "traceid", v.TraceID, "ERROR", handlerErr)
 
 				// Respond with the error back to the client.
 				err := web.Respond(ctx, w, "Internal Server Error", http.StatusInternalServerError)
@@ -40,8 +42,9 @@ func Errors(log *zap.SugaredLogger) web.Middleware {
 
 				// If we receive the shutdown err we need to return it
 				// back to the base handler to shut down the service.
-				if ok := web.IsShutdown(err); ok {
-					return err
+				ok := web.IsShutdown(handlerErr)
+				if ok {
+					return handlerErr
 				}
 			}
 

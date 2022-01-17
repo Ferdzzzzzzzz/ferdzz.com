@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"flag"
 	"fmt"
 	"net/http"
 	"os"
@@ -136,10 +137,15 @@ func run(log *zap.SugaredLogger) error {
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
+	devMode := flag.Bool("dev", false, "run application in development mode")
+	flag.Parse()
+
 	// Construct a mux for the api calls.
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
-		Shutdown: shutdown,
-		Log:      log,
+		Shutdown:   shutdown,
+		Log:        log,
+		CorsOrigin: "*",
+		DevMode:    *devMode,
 	})
 
 	// Construct a server to service the requests against the mux.

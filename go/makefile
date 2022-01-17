@@ -1,7 +1,7 @@
 .DEFAULT_GOAL := run
 .PHONY: run
 run:
-	@go run ./app
+	@go run ./app -dev
 
 style:
 	@npx tailwindcss -o ./public/styles.css --watch

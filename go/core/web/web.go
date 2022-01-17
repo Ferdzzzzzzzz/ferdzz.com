@@ -23,16 +23,26 @@ type Handler = func(
 type App struct {
 	mux      *mux.Router
 	shutdown chan os.Signal
+	devMode  bool
 	mw       []Middleware
+	devMw    []Middleware
 }
 
 // NewApp creates an App value that handles a set of routes for the application.
-func NewApp(shutdown chan os.Signal, mw ...Middleware) *App {
+func NewApp(shutdown chan os.Signal, devMode bool, mw ...Middleware) *App {
 	return &App{
 		mux:      mux.NewRouter(),
 		shutdown: shutdown,
+		devMode:  devMode,
 		mw:       mw,
 	}
+}
+
+// DevMiddleware adds dev helper middleware. The middleware only gets added if
+// the app is in dev mode. Dev middleware is wrapped on the outer-most layer so
+// as to not interfere with the internal middleware
+func (a *App) DevMiddleware(mw ...Middleware) {
+	a.devMw = mw
 }
 
 // SignalShutdown is used to gracefully shutdown the app when an integrity issue
@@ -53,6 +63,10 @@ func (a *App) Handle(method string, path string, handler Handler, mw ...Middlewa
 
 	handler = wrapMiddleware(mw, handler)
 	handler = wrapMiddleware(a.mw, handler)
+
+	if a.devMode {
+		handler = wrapMiddleware(a.devMw, handler)
+	}
 
 	h := func(w http.ResponseWriter, r *http.Request) {
 		ctx := r.Context()
