@@ -1,8 +1,13 @@
-import {LoaderFunction, useLoaderData} from 'remix'
+import {LoaderFunction, redirect, useLoaderData} from 'remix'
 
 export const loader: LoaderFunction = async () => {
   let res = await fetch('http://localhost:3000/user/123')
   let data = await res.json()
+
+  console.log('in here')
+  if (true) {
+    return redirect('/signin')
+  }
 
   return data
 }

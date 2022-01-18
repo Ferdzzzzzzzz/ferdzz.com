@@ -19,13 +19,6 @@ type APIMuxConfig struct {
 
 func APIMux(conf APIMuxConfig) *web.App {
 
-	if conf.DevMode {
-		conf.Log.Warn("================================================================")
-		conf.Log.Warn("Development Mode Enabled")
-		conf.Log.Warn("================================================================")
-
-	}
-
 	app := web.NewApp(
 		conf.Shutdown,
 		conf.DevMode,

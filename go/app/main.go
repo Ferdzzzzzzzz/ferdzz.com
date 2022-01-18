@@ -57,8 +57,7 @@ func run(log *zap.SugaredLogger) error {
 	// Configuration
 
 	cfg := struct {
-		Mode string `conf:"default:dev"`
-		Web  struct {
+		Web struct {
 			ReadTimeout     time.Duration `conf:"default:5s"`
 			WriteTimeout    time.Duration `conf:"default:10s"`
 			IdleTimeout     time.Duration `conf:"default:120s"`
@@ -75,6 +74,15 @@ func run(log *zap.SugaredLogger) error {
 			Password string `conf:"default:postgres,mask"`
 		}
 	}{}
+
+	devMode := flag.Bool("dev", false, "run application in development mode")
+	flag.Parse()
+
+	if *devMode {
+		log.Warn("================================================================")
+		log.Warn("Development Mode Enabled")
+		log.Warn("================================================================")
+	}
 
 	const prefix = "FERDZZ"
 	help, err := conf.ParseOSArgs(prefix, &cfg)
@@ -97,7 +105,7 @@ func run(log *zap.SugaredLogger) error {
 		return fmt.Errorf("generating config for output: %w", err)
 	}
 
-	if cfg.Mode == "dev" {
+	if *devMode {
 		fmt.Printf("\n%s\n\n", out)
 	} else {
 		log.Infow("startup", "config", out)
@@ -136,9 +144,6 @@ func run(log *zap.SugaredLogger) error {
 
 	shutdown := make(chan os.Signal, 1)
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
-
-	devMode := flag.Bool("dev", false, "run application in development mode")
-	flag.Parse()
 
 	// Construct a mux for the api calls.
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
