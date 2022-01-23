@@ -15,9 +15,9 @@
         "**/.mf": true,
         "**/.cache": true,
         "package-lock.json": true,
-        "tsconfig.json": false,
+        "tsconfig.json": true,
         "wrangler.toml": false,
         "remix.env.d.ts": true,
-        ".prettierrc": true,
+        ".prettierrc": false,
     }
 }

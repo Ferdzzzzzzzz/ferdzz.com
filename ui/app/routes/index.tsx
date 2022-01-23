@@ -1,40 +1,12 @@
 import {Link} from 'remix'
+import {DefaultLayout} from '~/components/DefaultLayout'
 
 export default function Index() {
   return (
-    <div style={{fontFamily: 'system-ui, sans-serif', lineHeight: '1.4'}}>
-      <h1>Welcome to Remix</h1>
-      <ul>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/blog"
-            rel="noreferrer"
-          >
-            15m Quickstart Blog Tutorial
-          </a>
-        </li>
-        <li>
-          <a
-            target="_blank"
-            href="https://remix.run/tutorials/jokes"
-            rel="noreferrer"
-          >
-            Deep Dive Jokes App Tutorial
-          </a>
-        </li>
-        <li>
-          <a target="_blank" href="https://remix.run/docs" rel="noreferrer">
-            Remix Docssss
-          </a>
-        </li>
-        <li>
-          <Link to="/canvas">Canvas</Link>
-        </li>
-        <li>
-          <Link to="/editor">Editor</Link>
-        </li>
-      </ul>
-    </div>
+    <DefaultLayout>
+      <div className="selection:bg-yellow-400">
+        <h1>Welcome to Remix</h1>
+      </div>
+    </DefaultLayout>
   )
 }

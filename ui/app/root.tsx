@@ -8,9 +8,10 @@ import {
 } from 'remix'
 import type {MetaFunction} from 'remix'
 import styles from './tailwind.css'
+import {Navbar} from './containers/navbar'
 
 export const meta: MetaFunction = () => {
-  return {title: 'New Remix App'}
+  return {title: 'ferdzz.com'}
 }
 
 export function links() {
@@ -26,7 +27,8 @@ export default function App() {
         <Meta />
         <Links />
       </head>
-      <body>
+      <body className="selection:bg-yellow-400">
+        <Navbar />
         <Outlet />
         <ScrollRestoration />
         <Scripts />
