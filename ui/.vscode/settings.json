@@ -18,6 +18,6 @@
         "tsconfig.json": true,
         "wrangler.toml": false,
         "remix.env.d.ts": true,
-        ".prettierrc": false,
+        ".prettierrc": true,
     }
 }
