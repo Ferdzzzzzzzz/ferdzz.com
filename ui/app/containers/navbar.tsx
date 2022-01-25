@@ -13,7 +13,7 @@ export function Navbar() {
             <li>
               <Link
                 to="/canvas"
-                className="hover:text-sky-600 transition-colors duration-100"
+                className="hover:text-yellow-500 transition-colors duration-100"
               >
                 canvas
               </Link>
@@ -24,6 +24,14 @@ export function Navbar() {
                 className="hover:text-purple-600 transition-colors duration-100"
               >
                 editor
+              </Link>
+            </li>
+            <li>
+              <Link
+                to="/about"
+                className="hover:text-emerald-500 transition-colors duration-100"
+              >
+                about
               </Link>
             </li>
             <li>

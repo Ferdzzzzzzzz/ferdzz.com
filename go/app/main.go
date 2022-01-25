@@ -15,6 +15,7 @@ import (
 	"github.com/ardanlabs/conf"
 	"github.com/ferdzzzzzzzz/ferdzz/app/handlers"
 	"github.com/ferdzzzzzzzz/ferdzz/core/logger"
+	"github.com/ferdzzzzzzzz/ferdzz/data/neo"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
@@ -65,13 +66,12 @@ func run(log *zap.SugaredLogger) error {
 			APIHost         string        `conf:"default:0.0.0.0:3000"`
 		}
 		Auth struct {
-			Username string `conf:"default:user"`
-			Pepper   string `conf:"default:pepperrr,mask"`
+			Secret string `conf:"default:secret"`
 		}
 		Neo4j struct {
-			Host     string `conf:"default:hostname"`
-			User     string `conf:"default:postgres"`
-			Password string `conf:"default:postgres,mask"`
+			Host     string `conf:"default:bolt://localhost:7687"`
+			User     string `conf:"default:user"`
+			Password string `conf:"default:password,mask"`
 		}
 	}{}
 
@@ -117,22 +117,18 @@ func run(log *zap.SugaredLogger) error {
 	// Create connectivity to the database.
 	log.Infow("startup", "status", "initializing database support", "host", cfg.Neo4j.Host)
 
-	// db, err := database.Open(database.Config{
-	// 	User:         cfg.DB.User,
-	// 	Password:     cfg.DB.Password,
-	// 	Host:         cfg.DB.Host,
-	// 	Name:         cfg.DB.Name,
-	// 	MaxIdleConns: cfg.DB.MaxIdleConns,
-	// 	MaxOpenConns: cfg.DB.MaxOpenConns,
-	// 	DisableTLS:   cfg.DB.DisableTLS,
-	// })
-	// if err != nil {
-	// 	return fmt.Errorf("connecting to db: %w", err)
-	// }
-	// defer func() {
-	// 	log.Infow("shutdown", "status", "stopping database support", "host", cfg.DB.Host)
-	// 	db.Close()
-	// }()
+	// neoDriver, err := neo.NewDriver(cfg.Neo4j.Host, cfg.Neo4j.User, cfg.Neo4j.Password)
+	neoDriver, err := neo.NewNoAuthDriver(cfg.Neo4j.Host)
+
+	if err != nil {
+
+		return fmt.Errorf("connecting to db: %w", err)
+	}
+
+	defer func() {
+		log.Infow("shutdown", "status", "stopping database support", "host", cfg.Neo4j.Host)
+		neoDriver.Close()
+	}()
 
 	// =========================================================================
 	// Start API Service

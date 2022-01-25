@@ -1,7 +1,8 @@
-import React, {useEffect} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useCollab, YjsProvider} from '~/components/yjs'
 import * as Y from 'yjs'
 import {HocuspocusProvider} from '@hocuspocus/provider'
+import {DefaultLayout} from '~/components/DefaultLayout'
 
 export function Thing() {
   let {ydoc} = useCollab()
@@ -56,13 +57,45 @@ export function Thing() {
 }
 
 export default function Index() {
+  let [ws, setWs] = useState<undefined | WebSocket>(undefined)
+
+  useEffect(() => {
+    const webSocket = new WebSocket('ws://localhost:4001')
+
+    webSocket.addEventListener('message', event => {
+      console.log('Message received from server')
+      console.log(event.data)
+    })
+
+    webSocket.onopen = () => {
+      setWs(webSocket)
+    }
+
+    return () => webSocket.close()
+  }, [])
+
+  if (!ws) {
+    return <div>Loading...</div>
+  }
+
   return (
     <YjsProvider>
-      <div>
-        <Thing />
-        <Thing />
-        Getting here
-      </div>
+      <DefaultLayout>
+        <div>
+          <div>
+            <Thing />
+            <Thing />
+            Getting here
+          </div>
+          <button
+            onClick={() => {
+              ws?.send('42069')
+            }}
+          >
+            Click to send message
+          </button>
+        </div>
+      </DefaultLayout>
     </YjsProvider>
   )
 }

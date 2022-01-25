@@ -1,0 +1,28 @@
+name = "hocus"
+type = "javascript"
+
+account_id = ""
+workers_dev = true
+# route = ""
+# zone_id = ""
+
+compatibility_date = "2022-01-23"
+compatibility_flags = []
+
+[durable_objects]
+bindings = []
+
+[[migrations]]
+tag = "v1"
+new_classes = []
+
+[build]
+command = "npm run build"
+
+[build.upload]
+format = "modules"
+dir = "dist"
+main = "./index.mjs"
+
+[miniflare]
+durable_objects_persist = true
