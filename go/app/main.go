@@ -14,6 +14,8 @@ import (
 
 	"github.com/ardanlabs/conf"
 	"github.com/ferdzzzzzzzz/ferdzz/app/handlers"
+	"github.com/ferdzzzzzzzz/ferdzz/business/auth"
+	"github.com/ferdzzzzzzzz/ferdzz/core/encrypt"
 	"github.com/ferdzzzzzzzz/ferdzz/core/logger"
 	"github.com/ferdzzzzzzzz/ferdzz/data/neo"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -66,11 +68,12 @@ func run(log *zap.SugaredLogger) error {
 			APIHost         string        `conf:"default:0.0.0.0:3000"`
 		}
 		Auth struct {
-			Secret string `conf:"default:secret"`
+			ClientAuthURL string `conf:"default:http://localhost:8787/magicSignIn?token="`
+			Secret        string `conf:"default:thishastobe32bytesforittowork!:),mask"`
 		}
 		Neo4j struct {
 			Host     string `conf:"default:bolt://localhost:7687"`
-			User     string `conf:"default:user"`
+			User     string `conf:"default:neo4j"`
 			Password string `conf:"default:password,mask"`
 		}
 	}{}
@@ -118,17 +121,31 @@ func run(log *zap.SugaredLogger) error {
 	log.Infow("startup", "status", "initializing database support", "host", cfg.Neo4j.Host)
 
 	// neoDriver, err := neo.NewDriver(cfg.Neo4j.Host, cfg.Neo4j.User, cfg.Neo4j.Password)
-	neoDriver, err := neo.NewNoAuthDriver(cfg.Neo4j.Host)
+	neoDriver, err := neo.NewDriver(cfg.Neo4j.Host, cfg.Neo4j.User, cfg.Neo4j.Password)
 
 	if err != nil {
-
 		return fmt.Errorf("connecting to db: %w", err)
+	}
+
+	connectionErr := neoDriver.VerifyConnectivity()
+	if connectionErr != nil {
+		return fmt.Errorf("connecting to db: %w", connectionErr)
 	}
 
 	defer func() {
 		log.Infow("shutdown", "status", "stopping database support", "host", cfg.Neo4j.Host)
 		neoDriver.Close()
 	}()
+
+	// =========================================================================
+	// Initialise Auth Service
+
+	encrypt, err := encrypt.NewService(cfg.Auth.Secret)
+	if err != nil {
+		return err
+	}
+
+	authService := auth.NewService(encrypt, cfg.Auth.ClientAuthURL)
 
 	// =========================================================================
 	// Start API Service
@@ -143,10 +160,12 @@ func run(log *zap.SugaredLogger) error {
 
 	// Construct a mux for the api calls.
 	apiMux := handlers.APIMux(handlers.APIMuxConfig{
-		Shutdown:   shutdown,
-		Log:        log,
-		CorsOrigin: "*",
-		DevMode:    *devMode,
+		Shutdown:    shutdown,
+		Log:         log,
+		CorsOrigin:  "*",
+		DevMode:     *devMode,
+		DB:          neoDriver,
+		AuthService: authService,
 	})
 
 	// Construct a server to service the requests against the mux.

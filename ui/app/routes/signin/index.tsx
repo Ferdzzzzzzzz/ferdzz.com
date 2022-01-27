@@ -7,10 +7,30 @@ export const action: ActionFunction = async ({request}) => {
   await new Promise(res => setTimeout(res, 1000))
   const formData = await request.formData()
   const email = formData.get('email')
-  console.log('==============================')
-  console.log(email)
 
-  return redirect('/')
+  let resp = await fetch('http://localhost:3000/magicSignIn', {
+    method: 'POST',
+    body: JSON.stringify({email: email}),
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+    },
+  })
+
+  let tokenCookie = resp.headers.get('Set-Cookie')
+  if (!tokenCookie) {
+    throw Error('Expected token cookie in headers')
+  }
+
+  let response = json(null, {
+    headers: {
+      'Set-Cookie': tokenCookie,
+    },
+  })
+
+  console.log(response.headers)
+
+  return response
 }
 
 function Info() {

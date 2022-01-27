@@ -1,30 +1,48 @@
 package auth
 
 import (
-	"fmt"
+	"encoding/json"
+	"errors"
 	"time"
+
+	"github.com/ferdzzzzzzzz/ferdzz/core/encrypt"
 )
 
-type Store interface {
-}
+const (
+	LinkExpirationTime    = time.Minute * 5
+	SessionExpirationTime = time.Hour * 24 * 7
+)
 
-// Implement Magic Link
-//
-// Build Auth Service for Encryption and Decryption
-// Auth Service should manage pairs of public-private keys in memory
-// MagicLink format: [user@gmail.com,linkExpirationTime,RememberToken?]
+var (
+	ErrLinkExpired = errors.New("the magic link has expired")
+)
 
 type Service struct {
+	encrypt encrypt.Service
+	authURL string
 }
 
-const LinkExpirationTime = time.Minute * 5
-const SessionExpirationTime = time.Hour * 24 * 7
+func NewService(encrypt encrypt.Service, authURL string) Service {
+	return Service{
+		encrypt: encrypt,
+		authURL: authURL,
+	}
+}
 
 type Session struct {
 	ID                  int64
 	Start               int64
 	Exp                 int64
 	HashedRememberToken string // bcrypt hash
+	Activated           bool
+}
+
+func NewSession(rememberToken string) Session {
+	return Session{
+		Start:               time.Now().Unix(),
+		Exp:                 time.Now().Add(SessionExpirationTime).Unix(),
+		HashedRememberToken: rememberToken,
+	}
 }
 
 type AuthCookie struct {
@@ -39,60 +57,32 @@ type User struct {
 	AcountIsSetup bool
 }
 
-type MagicLink struct {
-	Email     string
-	Exp       int64
-	SessionID int64
+type magicLinkVal struct {
+	Email     string `json:"email"`
+	Exp       int64  `json:"exp"`
+	SessionID int64  `json:"sessionId"`
 }
 
 // toString returns a URL encoded string of the magic link [email, exp]
-func (m MagicLink) toString() string {
+func (s Service) GetMagicLink(email string, sessionID int64) (string, error) {
+	magicLinkVal := magicLinkVal{
+		Email:     email,
+		Exp:       time.Now().Add(LinkExpirationTime).Unix(),
+		SessionID: sessionID,
+	}
 
-	return fmt.Sprintf("%s:%d", m.Email, m.Exp)
+	val, err := json.Marshal(magicLinkVal)
+	if err != nil {
+		return "", err
+	}
 
-	// perhaps return it as a JSON encoded array before encrypting it.
-}
+	// encrypt.Encrypt returns a base65 URLEncoded string
+	link, err := s.encrypt.Encrypt(string(val))
+	if err != nil {
+		return "", err
+	}
 
-// localhost:3000?magicLink=asfdkjh2li34uy9p8y3hlkjhlefla
-func (s Service) GetMagicLink(baseURL string) (string, error) {
-	expires := time.Now().Add(time.Hour).Unix()
+	url := s.authURL + link
 
-	fmt.Println(expires)
-	fmt.Println(time.Unix(expires, 0))
-
-	fmt.Println(time.Now().Add(time.Hour).Before(time.Unix(expires, 0)))
-	return "", nil
-}
-
-func (s Service) GetUserFromMagicLink(email string, magicLink string) (string, error) {
-	// decrypt magicLink
-	// unmarshal to [email, exp]
-	// if email != email return unauth
-	// if link expired return error
-	// return user email
-
-	return "", nil
-}
-
-func (s Service) GetUserByID() {
-
-}
-
-func (s Service) GetUserByEmail() {}
-
-func (s Service) CreateNewUser() {}
-
-func (s Service) UpdateUser() {}
-
-func (s Service) DeleteUserSession() {}
-
-// func (s Service)
-
-func (m MagicLink) Encrypt() string {
-
-	return ""
-}
-
-func (m MagicLink) Decrypt() string {
-	return ""
+	return url, nil
 }

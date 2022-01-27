@@ -2,9 +2,11 @@ package handlers
 
 import (
 	"context"
+	"fmt"
 	"net/http"
 	"os"
 
+	"github.com/ferdzzzzzzzz/ferdzz/business/auth"
 	"github.com/ferdzzzzzzzz/ferdzz/business/mid"
 	"github.com/ferdzzzzzzzz/ferdzz/core/web"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -12,11 +14,12 @@ import (
 )
 
 type APIMuxConfig struct {
-	Shutdown   chan os.Signal
-	Log        *zap.SugaredLogger
-	CorsOrigin string
-	DevMode    bool
-	DB         neo4j.Driver
+	Shutdown    chan os.Signal
+	Log         *zap.SugaredLogger
+	CorsOrigin  string
+	DevMode     bool
+	DB          neo4j.Driver
+	AuthService auth.Service
 }
 
 func APIMux(conf APIMuxConfig) *web.App {
@@ -35,12 +38,21 @@ func APIMux(conf APIMuxConfig) *web.App {
 	// Resource Routes
 
 	authHandler := authHandler{
-		Log: conf.Log,
-		DB:  conf.DB,
+		Log:  conf.Log,
+		DB:   conf.DB,
+		Auth: conf.AuthService,
 	}
 
 	// this is a dummy route
 	app.Handle(http.MethodGet, "/user/{userID}", userRoute)
+
+	app.Handle(http.MethodGet, "/dummy", func(ctx context.Context, w http.ResponseWriter, r *http.Request) error {
+
+		fmt.Println("Hello")
+		fmt.Println(r.Cookies())
+
+		return web.Respond(ctx, w, nil, http.StatusNoContent)
+	})
 
 	app.Handle(http.MethodPost, "/magicSignIn", authHandler.signInWithMagicLink)
 

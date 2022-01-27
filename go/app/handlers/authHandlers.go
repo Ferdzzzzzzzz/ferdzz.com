@@ -2,6 +2,9 @@ package handlers
 
 import (
 	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
 	"net/http"
 	"time"
 
@@ -14,9 +17,9 @@ import (
 )
 
 type authHandler struct {
-	Log           *zap.SugaredLogger
-	DB            neo4j.Driver
-	ClientBaseURL string
+	Log  *zap.SugaredLogger
+	DB   neo4j.Driver
+	Auth auth.Service
 }
 
 func (a authHandler) signInWithMagicLink(
@@ -25,16 +28,30 @@ func (a authHandler) signInWithMagicLink(
 	r *http.Request,
 ) error {
 
-	magicLink, ok := web.QueryParam(r, "magic")
-
-	// =========================================================================
-	// User doesn't have a magic link yet, we need to create one and email it
+	token, ok := web.QueryParam(r, "token")
 
 	if !ok {
-		// TODO
 		// =====================================================================
+		// User doesn't have a magic link yet, we need to create one and email
+		// it to the user
+
 		// check that post body contains user email
-		// =====================================================================
+		// fmt.Println(r.Body)
+
+		user := struct {
+			Email string `json:"email"`
+		}{}
+
+		// jsonStr, _ := ioutil.ReadAll(r.Body)
+		// x := map[string]string{}
+
+		// json.Unmarshal([]byte(jsonStr), &x)
+		// fmt.Println(x)
+
+		err := json.NewDecoder(r.Body).Decode(&user)
+		if err != nil || user.Email == "" {
+			return web.Respond(ctx, w, "Bad Request: user email required", http.StatusBadRequest)
+		}
 
 		// Create remember token
 		rememberToken, err := rand.RememberToken()
@@ -45,21 +62,86 @@ func (a authHandler) signInWithMagicLink(
 
 		// Hash remember token
 		hashedRememberToken, err := hash.BcryptNew(rememberToken)
-		a.Log.Info("token", hashedRememberToken)
+		a.Log.Info("token: ", hashedRememberToken)
 		if err != nil {
 			a.Log.Error(err)
 			return err
 		}
 
-		// Create session in Database, storing remember_token hash and salt
+		// =====================================================================
+		// Create a session in the database, if the user doesn't exist we create
+		// them first using a MERGE command
 
-		// create magic link, encrypted with HMAC: [email, session ID, link-exp] and email to user
-		// Respond to browser with unhashed remember_token Cookie
+		userSession := auth.NewSession(rememberToken)
+
+		session := a.DB.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+		defer session.Close()
+
+		a.Log.Info("writing user session to neo4j")
+
+		result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+			result, err := tx.Run(`
+		MERGE (u:User {email: $email})
+
+		CREATE (s:Session)
+		SET s.hashedRememberToken 	= $token
+		SET s.start 				= $start
+		SET s.exp 					= $exp
+		SET s.activated 			= false
+
+		CREATE (u)-[:HAS]->(s)
+		RETURN id(s)
+		
+		`,
+
+				map[string]interface{}{
+					"email": user.Email,
+					"token": userSession.HashedRememberToken,
+					"start": userSession.Start,
+					"exp":   userSession.Exp,
+				},
+			)
+
+			if err != nil {
+				return nil, err
+			}
+
+			if !result.Next() {
+				return nil, result.Err()
+			}
+
+			return result.Record().Values[0], nil
+
+		})
+
+		if err != nil {
+			return err
+		}
+
+		sessionID, ok := result.(int64)
+		if !ok {
+			return errors.New("invalid sessionID")
+		}
+
+		// =====================================================================
+		// Create Magic Link and email to user
+
+		magicLink, err := a.Auth.GetMagicLink(user.Email, sessionID)
+		if err != nil {
+			return err
+		}
+
+		fmt.Println("================================")
+		fmt.Println("Email this link")
+		fmt.Println(magicLink)
+		fmt.Println("================================")
+
+		a.Log.Info("setting user cookie")
 
 		http.SetCookie(w, &http.Cookie{
 			Name:     "remember_token",
 			Value:    rememberToken,
-			Domain:   "https://ferdzz.com",
+			Domain:   "http://localhost:8787",
 			Expires:  time.Now().Add(auth.LinkExpirationTime),
 			Secure:   true,
 			HttpOnly: true,
@@ -68,14 +150,10 @@ func (a authHandler) signInWithMagicLink(
 		return web.Respond(ctx, w, nil, http.StatusNoContent)
 	}
 
-	a.Log.Info("magiclink", magicLink)
+	// =========================================================================
+	// If we get here the user has clicked on the magic link
 
-	//  When user clicks on magic link, redirect to ?magicLink=“link” page
-	//  Send magic link up with remember_token
-	//  Unencrypt link then validate email/session_id matches remember_token hash
-	//  Trade magic link for encrypted auth cookie: [email, session ID, remember_token]
-	//  Now session is protected from me and I can lookup user by email
-	//  Auth service should rotate encryption secrets smoothly
+	a.Log.Info("magiclink", token)
 
 	return nil
 }
