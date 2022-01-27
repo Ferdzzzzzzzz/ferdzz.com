@@ -28,7 +28,7 @@ func (a authHandler) signInWithMagicLink(
 	r *http.Request,
 ) error {
 
-	token, ok := web.QueryParam(r, "token")
+	magicLink, ok := web.QueryParam(r, "token")
 
 	if !ok {
 		// =====================================================================
@@ -153,7 +153,15 @@ func (a authHandler) signInWithMagicLink(
 	// =========================================================================
 	// If we get here the user has clicked on the magic link
 
-	a.Log.Info("magiclink", token)
+	a.Log.Info(magicLink)
+	rememberToken, err := r.Cookie("remember_token")
+	if err != nil {
+		a.Log.Error(err)
+		return web.Respond(ctx, w, "no remeber_token cookie present on header", http.StatusBadRequest)
+	}
+
+	a.Log.Info("==============================")
+	a.Log.Info(rememberToken)
 
 	return nil
 }

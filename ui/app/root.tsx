@@ -9,6 +9,7 @@ import {
 import type {MetaFunction} from 'remix'
 import styles from './tailwind.css'
 import {Navbar} from './containers/navbar'
+import {Toaster} from 'react-hot-toast'
 
 export const meta: MetaFunction = () => {
   return {title: 'ferdzz.com'}
@@ -28,6 +29,7 @@ export default function App() {
         <Links />
       </head>
       <body className="selection:bg-yellow-400">
+        <Toaster />
         <Navbar />
         <Outlet />
         <ScrollRestoration />

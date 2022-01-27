@@ -659,6 +659,14 @@ Ensure the default browser behavior of the `hidden` attribute.
   margin-bottom: calc(1.25rem * var(--tw-space-y-reverse));
 }
 
+.overflow-clip {
+  overflow: clip;
+}
+
+.overflow-ellipsis {
+  text-overflow: ellipsis;
+}
+
 .rounded-md {
   border-radius: 0.375rem;
 }

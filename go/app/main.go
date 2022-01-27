@@ -68,7 +68,7 @@ func run(log *zap.SugaredLogger) error {
 			APIHost         string        `conf:"default:0.0.0.0:3000"`
 		}
 		Auth struct {
-			ClientAuthURL string `conf:"default:http://localhost:8787/magicSignIn?token="`
+			ClientAuthURL string `conf:"default:http://localhost:8787/signin?token="`
 			Secret        string `conf:"default:thishastobe32bytesforittowork!:),mask"`
 		}
 		Neo4j struct {
