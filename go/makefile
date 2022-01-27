@@ -25,10 +25,15 @@ build-logfmt:
 constraints:
 	CREATE CONSTRAINT user_email_unique [IF NOT EXISTS]
 	FOR (u:User)
-	REQUIRE u.email IS UNIQUE
+	REQUIRE u.Email IS UNIQUE
 
 	CREATE CONSTRAINT user_email_exists [IF NOT EXISTS]
 	FOR (u:User)
-	REQUIRE u.email IS NOT NULL
+	REQUIRE u.Email IS NOT NULL
 
 	SHOW CONSTRAINTS
+
+	DROP CONSTRAINT user_email_exists
+
+
+	

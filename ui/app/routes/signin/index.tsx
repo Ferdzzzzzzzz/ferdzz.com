@@ -22,15 +22,22 @@ export const loader: LoaderFunction = async ({request}) => {
   let url = new URL(request.url)
   let magicLink = url.searchParams.get('token')
 
+  // =====================================================================
+  // If we don't have the magic link, we just want to be on the sign in page
+
   if (!magicLink) {
     return json<LoaderData>({})
   }
 
+  // =====================================================================
+  // If we do have the sign in link, we need to trade it for an auth cookie
+
   let cookies = parseRequestCookies(request)
   let rememberToken = cookies.get('remember_token')
 
+  // If we have a sign in link but no remember_token cookie, we redirect
   if (!rememberToken) {
-    return redirect('/')
+    return redirect('/signin')
   }
 
   let resp = await fetch(
@@ -45,8 +52,22 @@ export const loader: LoaderFunction = async ({request}) => {
     },
   )
 
-  return json<LoaderData>({
-    magicLink: magicLink,
+  if (!resp.ok) {
+    throw Error('auth failed')
+  }
+
+  let tokenCookie = resp.headers.get('Set-Cookie')
+  if (!tokenCookie) {
+    throw Error('Expected token cookie in headers')
+  }
+
+  console.log('cookie')
+  console.log(tokenCookie)
+
+  return redirect('/', {
+    headers: {
+      'Set-Cookie': tokenCookie,
+    },
   })
 }
 
@@ -159,10 +180,10 @@ function SignInForm() {
   )
 }
 
-function HasToken({magicToken}: LoaderData) {
+function HasToken({magicLink}: {magicLink: string}) {
   return (
     <div className="overflow-clip">
-      <p>{magicToken}</p>
+      <p>{magicLink}</p>
     </div>
   )
 }
@@ -189,8 +210,8 @@ export default function SignIn() {
 
   return (
     <SignInWrapper>
-      {loaderData.magicToken ? (
-        <HasToken magicToken={loaderData.magicToken} />
+      {loaderData.magicLink ? (
+        <HasToken magicLink={loaderData.magicLink} />
       ) : (
         <SignInForm />
       )}

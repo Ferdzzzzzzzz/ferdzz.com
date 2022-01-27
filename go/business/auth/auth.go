@@ -57,16 +57,60 @@ type User struct {
 	AcountIsSetup bool
 }
 
-type magicLinkVal struct {
-	Email     string `json:"email"`
-	Exp       int64  `json:"exp"`
-	SessionID int64  `json:"sessionId"`
+type MagicLink struct {
+	UserID    int64 `json:"userID"`
+	Exp       int64 `json:"exp"`
+	SessionID int64 `json:"sessionId"`
+}
+
+type Token struct {
+	UserID        int64  `json:"userID"`
+	SessionID     int64  `json:"sessionId"`
+	RememberToken string `json:"remember_token"`
+}
+
+func (s Service) EncryptAuthToken(userID, sessionID int64, rememberToken string) (string, error) {
+	token := Token{
+		UserID:        userID,
+		SessionID:     sessionID,
+		RememberToken: rememberToken,
+	}
+
+	val, err := json.Marshal(token)
+	if err != nil {
+		return "", err
+	}
+
+	// encrypt.Encrypt returns a base65 URLEncoded string
+	encryptedToken, err := s.encrypt.Encrypt(string(val))
+	if err != nil {
+		return "", err
+	}
+
+	return encryptedToken, nil
+}
+
+func (s Service) UnencryptAuthToken(encryptedToken string) (Token, error) {
+	jsonString, err := s.encrypt.Decrypt(encryptedToken)
+	if err != nil {
+		return Token{}, err
+	}
+
+	token := Token{}
+
+	err = json.Unmarshal([]byte(jsonString), &token)
+
+	if err != nil {
+		return Token{}, err
+	}
+
+	return token, nil
 }
 
 // toString returns a URL encoded string of the magic link [email, exp]
-func (s Service) GetMagicLink(email string, sessionID int64) (string, error) {
-	magicLinkVal := magicLinkVal{
-		Email:     email,
+func (s Service) GetNewMagicLink(userID int64, sessionID int64) (string, error) {
+	magicLinkVal := MagicLink{
+		UserID:    userID,
 		Exp:       time.Now().Add(LinkExpirationTime).Unix(),
 		SessionID: sessionID,
 	}
@@ -85,4 +129,21 @@ func (s Service) GetMagicLink(email string, sessionID int64) (string, error) {
 	url := s.authURL + link
 
 	return url, nil
+}
+
+func (s Service) UnencryptMagicLink(link string) (MagicLink, error) {
+	jsonString, err := s.encrypt.Decrypt(link)
+	if err != nil {
+		return MagicLink{}, err
+	}
+
+	magicLink := MagicLink{}
+
+	err = json.Unmarshal([]byte(jsonString), &magicLink)
+
+	if err != nil {
+		return MagicLink{}, err
+	}
+
+	return magicLink, nil
 }

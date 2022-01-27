@@ -6,7 +6,18 @@ function parseCookieHeader(header: string): Map<string, string> {
   }
 
   let pairs = header.split(';')
-  let splittedPairs = pairs.map(cookie => cookie.split('='))
+
+  let splittedPairs = pairs.map(cookie => {
+    cookie.split('=')
+
+    let splitIndex = cookie.indexOf('=')
+    return [
+      cookie.slice(0, splitIndex),
+      cookie.slice(splitIndex + 1, cookie.length),
+    ]
+  })
+
+  console.log(splittedPairs)
 
   splittedPairs.map(cookie => {
     let [key, value] = cookie
