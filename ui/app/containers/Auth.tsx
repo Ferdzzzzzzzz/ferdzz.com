@@ -1,31 +1,39 @@
 import React, {PropsWithChildren, useContext} from 'react'
+import {useMatches} from 'remix'
+import * as z from 'zod'
 
 type Authenticated = {
-  isAuthenticated: true
-  email: string
+  IsAuthenticated: true
+  ID: number
+  Email: string
+  AccountIsSetup: boolean
 }
 
 type NotAuthenticated = {
-  isAuthenticated: false
+  IsAuthenticated: false
 }
+
+export const JsonToUser = z
+  .object({
+    ID: z.number(),
+    Email: z.string(),
+    AccountIsSetup: z.boolean(),
+  })
+  .transform(x => {
+    let y: Authenticated = {...x, IsAuthenticated: true}
+    return y
+  })
 
 export type User = Authenticated | NotAuthenticated
 
-const AuthContext = React.createContext<User | undefined>(undefined)
+export function useUser() {
+  let rootLoaderData = useMatches()[0].data as {user: User}
 
-export function AuthProvider({
-  children,
-  user,
-}: PropsWithChildren<{user: User}>) {
-  return <AuthContext.Provider value={user}>{children}</AuthContext.Provider>
-}
-
-export function useAuth() {
-  let context = useContext(AuthContext)
-
-  if (!context) {
-    throw Error('useAuth can only be used in a child of AuthProvider')
+  if (!rootLoaderData) {
+    throw Error(
+      'useAuth can only be used as child of / [root] path...so this should work everwhere',
+    )
   }
 
-  return context
+  return rootLoaderData.user
 }

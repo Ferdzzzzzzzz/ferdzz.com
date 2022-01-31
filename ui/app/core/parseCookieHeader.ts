@@ -7,6 +7,8 @@ function parseCookieHeader(header: string): Map<string, string> {
 
   let pairs = header.split(';')
 
+  pairs = pairs.map(s => s.trim())
+
   let splittedPairs = pairs.map(cookie => {
     cookie.split('=')
 
@@ -16,8 +18,6 @@ function parseCookieHeader(header: string): Map<string, string> {
       cookie.slice(splitIndex + 1, cookie.length),
     ]
   })
-
-  console.log(splittedPairs)
 
   splittedPairs.map(cookie => {
     let [key, value] = cookie

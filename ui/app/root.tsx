@@ -12,7 +12,7 @@ import type {MetaFunction} from 'remix'
 import styles from './tailwind.css'
 import {Navbar} from './containers/Navbar'
 import {Toaster} from 'react-hot-toast'
-import {AuthProvider, User} from './containers/Auth'
+import {JsonToUser, User} from './containers/Auth'
 import {parseRequestCookies} from './core/parseCookieHeader'
 
 export const meta: MetaFunction = () => {
@@ -26,26 +26,48 @@ export function links() {
 type LoaderData = {
   user: User
 }
-
 export const loader: LoaderFunction = async ({request}) => {
   let cookies = parseRequestCookies(request)
-  let rememberToken = cookies.get('remember_token')
 
-  if (!rememberToken) {
-    let returnVal: LoaderData = {
-      user: {isAuthenticated: false},
-    }
+  let authToken = cookies.get('auth_token')
 
-    return json(returnVal)
+  let notAuthenticated = json<LoaderData>({
+    user: {
+      IsAuthenticated: false,
+    },
+  })
+
+  if (!authToken) {
+    return notAuthenticated
   }
 
-  // fetch some user context from api
+  let resp = await fetch('http://localhost:3000/userContext', {
+    headers: {
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
+      Cookie: `auth_token=${authToken}`,
+    },
+  })
 
-  let returnVal: LoaderData = {
-    user: {isAuthenticated: true},
+  if (resp.status === 401) {
+    return notAuthenticated
   }
 
-  return json(returnVal)
+  if (!resp.ok) {
+    throw Error('Could not authenticate')
+  }
+
+  let userJson = await resp.json()
+  let userParse = JsonToUser.safeParse(userJson)
+
+  if (!userParse.success) {
+    console.log(userParse.error)
+    throw Error('Failed to get user information')
+  }
+
+  return json<{
+    user: User
+  }>({user: userParse.data})
 }
 
 export default function App() {
@@ -59,10 +81,8 @@ export default function App() {
       </head>
       <body className="selection:bg-yellow-400">
         <Toaster />
-        <AuthProvider user={}>
-          <Navbar />
-          <Outlet />
-        </AuthProvider>
+        <Navbar />
+        <Outlet />
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}

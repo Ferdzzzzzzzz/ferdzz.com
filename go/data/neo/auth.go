@@ -173,3 +173,65 @@ func CreateAuthSession(
 
 	return nil
 }
+
+func GetUserContext(
+	dbSession neo4j.Session,
+	userID int64,
+	sessionID int64,
+) (auth.User, auth.Session, error) {
+
+	result, err := dbSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+	MATCH (u:User)-[:HAS]->(s:Session)
+	WHERE 
+		id(u) = $UserID 		AND
+		id(s) = $SessionID
+	
+	RETURN {
+		sessionID: id(s),
+		session: properties(s),
+		userID: id(u),
+		user: properties(u)
+	}
+	`,
+			map[string]interface{}{
+				"UserID":    userID,
+				"SessionID": sessionID,
+			},
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if !result.Next() {
+			return nil, result.Err()
+		}
+
+		return result.Record().Values[0], nil
+	})
+
+	if err != nil {
+		return auth.User{}, auth.Session{}, err
+	}
+
+	unmarshal := struct {
+		UserID    int64
+		User      auth.User
+		SessionID int64
+		Session   auth.Session
+	}{}
+
+	err = mapstructure.Decode(result, &unmarshal)
+	if err != nil {
+		return auth.User{}, auth.Session{}, err
+	}
+
+	user := unmarshal.User
+	user.ID = unmarshal.UserID
+
+	session := unmarshal.Session
+	session.ID = unmarshal.SessionID
+
+	return user, session, nil
+}

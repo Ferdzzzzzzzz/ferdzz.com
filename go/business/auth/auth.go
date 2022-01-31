@@ -11,6 +11,8 @@ import (
 const (
 	LinkExpirationTime    = time.Minute * 5
 	SessionExpirationTime = time.Hour * 24 * 7
+	AuthTokenCookie       = "auth_token"
+	RememberTokenCookie   = "remember_token"
 )
 
 var (
@@ -45,16 +47,10 @@ func NewSession(rememberToken string) Session {
 	}
 }
 
-type AuthCookie struct {
-	Email               string
-	SessionID           int64
-	HashedRememberToken string
-}
-
 type User struct {
-	Name          string
-	Email         string
-	AcountIsSetup bool
+	ID             int64
+	Email          string
+	AccountIsSetup bool
 }
 
 type MagicLink struct {
@@ -64,16 +60,20 @@ type MagicLink struct {
 }
 
 type Token struct {
-	UserID        int64  `json:"userID"`
-	SessionID     int64  `json:"sessionId"`
-	RememberToken string `json:"remember_token"`
+	UserID              int64  `json:"userID"`
+	SessionID           int64  `json:"sessionId"`
+	HashedRememberToken string `json:"remember_token"`
 }
 
-func (s Service) EncryptAuthToken(userID, sessionID int64, rememberToken string) (string, error) {
+func (s Service) NewAuthCookie(
+	userID,
+	sessionID int64,
+	hashedRememberToken string,
+) (string, error) {
 	token := Token{
-		UserID:        userID,
-		SessionID:     sessionID,
-		RememberToken: rememberToken,
+		UserID:              userID,
+		SessionID:           sessionID,
+		HashedRememberToken: hashedRememberToken,
 	}
 
 	val, err := json.Marshal(token)

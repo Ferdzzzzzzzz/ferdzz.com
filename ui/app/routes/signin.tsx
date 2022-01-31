@@ -13,6 +13,10 @@ import {
 } from 'remix'
 import {TextInput} from '~/components/TextInput'
 import {parseRequestCookies} from '~/core/parseCookieHeader'
+import {
+  forwardRespCookiesToJSON,
+  forwardRespCookiesToRedirect,
+} from '~/utils/forward-cookie'
 
 type LoaderData = {
   magicLink?: string | null
@@ -36,11 +40,12 @@ export const loader: LoaderFunction = async ({request}) => {
   let rememberToken = cookies.get('remember_token')
 
   // If we have a sign in link but no remember_token cookie, we redirect
+
   if (!rememberToken) {
     return redirect('/signin')
   }
 
-  let resp = await fetch(
+  let serverRequest = new Request(
     `http://localhost:3000/magicSignIn?token=${magicLink}`,
     {
       method: 'POST',
@@ -52,23 +57,14 @@ export const loader: LoaderFunction = async ({request}) => {
     },
   )
 
+  let resp = await fetch(serverRequest)
+
   if (!resp.ok) {
     throw Error('auth failed')
   }
 
-  let tokenCookie = resp.headers.get('Set-Cookie')
-  if (!tokenCookie) {
-    throw Error('Expected token cookie in headers')
-  }
-
-  console.log('cookie')
-  console.log(tokenCookie)
-
-  return redirect('/', {
-    headers: {
-      'Set-Cookie': tokenCookie,
-    },
-  })
+  console.log('2')
+  return forwardRespCookiesToRedirect(resp, '/')
 }
 
 type ActionData = {
@@ -81,7 +77,7 @@ export const action: ActionFunction = async ({request}) => {
   const formData = await request.formData()
   const email = formData.get('email')
 
-  let resp = await fetch('http://localhost:3000/magicSignIn', {
+  let serverResponse = await fetch('http://localhost:3000/magicSignIn', {
     method: 'POST',
     body: JSON.stringify({email: email}),
     headers: {
@@ -90,29 +86,15 @@ export const action: ActionFunction = async ({request}) => {
     },
   })
 
-  if (!resp.ok) {
+  if (!serverResponse.ok) {
     return json<ActionData>({
-      serverError: await resp.json(),
+      serverError: await serverResponse.json(),
     })
   }
 
-  let tokenCookie = resp.headers.get('Set-Cookie')
-  if (!tokenCookie) {
-    throw Error('Expected token cookie in headers')
-  }
-
-  let response = json<ActionData>(
-    {
-      signedIn: true,
-    },
-    {
-      headers: {
-        'Set-Cookie': tokenCookie,
-      },
-    },
-  )
-
-  return response
+  return forwardRespCookiesToJSON<ActionData>(serverResponse, {
+    signedIn: true,
+  })
 }
 
 function Info() {
@@ -152,8 +134,8 @@ function SignInForm() {
 
       <Form
         className="mt-10"
-        replace
         method="post"
+        replace
         onChange={e => {
           let isValid = e.currentTarget.checkValidity()
           setIsValid(isValid)
@@ -209,10 +191,6 @@ function SignInWrapper({children}: PropsWithChildren<{}>) {
 export default function SignIn() {
   let loaderData = useLoaderData<LoaderData>()
   let actionData = useActionData<ActionData>()
-
-  console.log('============')
-
-  console.log(actionData)
 
   useEffect(() => {
     if (actionData?.serverError) {

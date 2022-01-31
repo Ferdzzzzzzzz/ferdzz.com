@@ -97,7 +97,7 @@ func (a authHandler) signInWithMagicLink(
 		a.Log.Info("setting user cookie")
 
 		http.SetCookie(w, &http.Cookie{
-			Name:     "remember_token",
+			Name:     auth.RememberTokenCookie,
 			Value:    rememberToken,
 			Domain:   "http://localhost:8787",
 			Expires:  time.Now().Add(auth.LinkExpirationTime),
@@ -112,7 +112,7 @@ func (a authHandler) signInWithMagicLink(
 	// If we get here the user has clicked on the magic link
 
 	a.Log.Info(encryptedMagicLink)
-	rememberToken, err := r.Cookie("remember_token")
+	rememberToken, err := r.Cookie(auth.RememberTokenCookie)
 	if err != nil {
 		a.Log.Error(err)
 		return web.Respond(ctx, w, "You can only sign in with the link from the same browser you requested it.", http.StatusBadRequest)
@@ -155,7 +155,7 @@ func (a authHandler) signInWithMagicLink(
 		return err
 	}
 
-	authToken, err := a.Auth.EncryptAuthToken(
+	authToken, err := a.Auth.NewAuthCookie(
 		magicLink.UserID,
 		magicLink.SessionID,
 		rememberToken.Value,
@@ -165,14 +165,25 @@ func (a authHandler) signInWithMagicLink(
 	}
 
 	authCookie := http.Cookie{
-		Name:     "auth_token",
+		Name:     auth.AuthTokenCookie,
 		Value:    authToken,
 		Expires:  time.Now().Add(auth.SessionExpirationTime),
 		HttpOnly: true,
 		SameSite: http.SameSiteStrictMode,
 	}
-
 	http.SetCookie(w, &authCookie)
+
+	// =========================================================================
+	// Return expired remember_token, this deletes the cookie from the browser
+	expiredRememberTokenCookie := http.Cookie{
+		Name:     auth.RememberTokenCookie,
+		Value:    "",
+		Expires:  time.Now().Add(time.Hour * -1),
+		Secure:   true,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &expiredRememberTokenCookie)
 
 	return web.Respond(ctx, w, nil, http.StatusNoContent)
 }
@@ -184,6 +195,103 @@ func (a authHandler) userContext(
 ) error {
 
 	a.Log.Info("fetching user context")
+
+	// =========================================================================
+	// Get Auth Cookie and unencrypt it
+
+	authTokenString, err := r.Cookie(auth.AuthTokenCookie)
+
+	if err != nil {
+		return web.Respond(ctx, w, "no auth_token cookie present on request", http.StatusUnauthorized)
+	}
+
+	authToken, err := a.Auth.UnencryptAuthToken(authTokenString.Value)
+	if err != nil {
+		return web.Respond(ctx, w, "bad auth token", http.StatusUnauthorized)
+	}
+
+	// =========================================================================
+	// Get session and User, check if session has expired, otherwise return user
+	// context
+
+	dbSession := a.DB.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeRead})
+	defer dbSession.Close()
+
+	user, authSession, err := neo.GetUserContext(dbSession, authToken.UserID, authToken.SessionID)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(user, authSession)
+
+	return web.Respond(ctx, w, &user, http.StatusOK)
+}
+
+func (a authHandler) deleteAuthSession(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+) error {
+	authTokenString, err := r.Cookie(auth.AuthTokenCookie)
+	if err != nil {
+		return web.Respond(ctx, w, nil, http.StatusUnauthorized)
+	}
+
+	// =========================================================================
+	// Get user and session from cookie
+	authToken, err := a.Auth.UnencryptAuthToken(authTokenString.Value)
+	if err != nil {
+		return web.Respond(ctx, w, nil, http.StatusUnauthorized)
+	}
+
+	// =========================================================================
+	// Delete session
+	a.Log.Info("deleting auth session")
+
+	dbSession := a.DB.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer dbSession.Close()
+
+	_, err = dbSession.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
+		result, err := tx.Run(`
+	MATCH (u:User)-[:HAS]->(s:Session)
+	WHERE 
+		id(u) = $UserID 		AND
+		id(s) = $SessionID
+	
+	DETACH DELETE s
+	`,
+			map[string]interface{}{
+				"UserID":    authToken.UserID,
+				"SessionID": authToken.SessionID,
+			},
+		)
+
+		if err != nil {
+			return nil, err
+		}
+
+		if !result.Next() {
+			return nil, result.Err()
+		}
+
+		return nil, nil
+	})
+
+	if err != nil {
+		return err
+	}
+
+	// =========================================================================
+	// Return expired auth_token, this deletes the cookie from the browser
+	expiredAuthCookie := http.Cookie{
+		Name:     auth.AuthTokenCookie,
+		Value:    "",
+		Expires:  time.Now().Add(time.Hour * -1),
+		Secure:   true,
+		HttpOnly: true,
+	}
+
+	http.SetCookie(w, &expiredAuthCookie)
 
 	return nil
 }
