@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -29,6 +28,9 @@ func (a authHandler) signInWithMagicLink(
 	r *http.Request,
 ) error {
 
+	dbSession := a.DB.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
+	defer dbSession.Close()
+
 	encryptedMagicLink, ok := web.QueryParam(r, "token")
 
 	if !ok {
@@ -42,12 +44,6 @@ func (a authHandler) signInWithMagicLink(
 		user := struct {
 			Email string
 		}{}
-
-		// jsonStr, _ := ioutil.ReadAll(r.Body)
-		// x := map[string]string{}
-
-		// json.Unmarshal([]byte(jsonStr), &x)
-		// fmt.Println(x)
 
 		err := json.NewDecoder(r.Body).Decode(&user)
 		if err != nil || user.Email == "" {
@@ -75,52 +71,11 @@ func (a authHandler) signInWithMagicLink(
 
 		userSession := auth.NewSession(hashedRememberToken)
 
-		session := a.DB.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-		defer session.Close()
-
 		a.Log.Info("writing user session to neo4j")
 
-		result, err := session.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-			result, err := tx.Run(`
-		MERGE (u:User {Email: $Email})
-
-		CREATE (s:Session)
-		SET s.HashedRememberToken 	= $Token
-		SET s.Start 				= $Start
-		SET s.Exp 					= $Exp
-		SET s.Activated 			= false
-
-		CREATE (u)-[:HAS]->(s)
-		RETURN id(u), id(s)
-		`,
-
-				map[string]interface{}{
-					"Email": user.Email,
-					"Token": userSession.HashedRememberToken,
-					"Start": userSession.Start,
-					"Exp":   userSession.Exp,
-				},
-			)
-
-			if err != nil {
-				return nil, err
-			}
-
-			if !result.Next() {
-				return nil, result.Err()
-			}
-
-			return result.Record().Values, nil
-
-		})
-
+		IDs, err := neo.MergeUserAndSession(dbSession, user.Email, userSession)
 		if err != nil {
 			return err
-		}
-
-		IDs, err := neo.UnmarshalIDSlice(result)
-		if err != nil || len(IDs) < 2 {
-			return errors.New("invalid read from DB")
 		}
 
 		userID := IDs[0]
@@ -171,52 +126,17 @@ func (a authHandler) signInWithMagicLink(
 	a.Log.Info(magicLink)
 	// check if link has expired
 
-	// Helper -> 	If the time that the magic link expires is before now, it
-	// 				has expired
+	// Helper Sentence -> 	If the time that the magic link expires is before
+	// 						now, it has expired
 	linkIsExpired := time.Unix(magicLink.Exp, 0).Before(time.Now())
 
 	if linkIsExpired {
 		return web.Respond(ctx, w, "Sign In link has expired, please request a new one.", http.StatusBadRequest)
 	}
 
-	dbSession := a.DB.NewSession(neo4j.SessionConfig{AccessMode: neo4j.AccessModeWrite})
-	defer dbSession.Close()
-
-	result, err := dbSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		result, err := tx.Run(`
-	MATCH (u:User)-[:HAS]->(s:Session)
-	WHERE 
-		id(u) = $UserID 		AND
-		id(s) = $SessionID
-	
-	RETURN s
-	`,
-			map[string]interface{}{
-				"UserID":    magicLink.UserID,
-				"SessionID": magicLink.SessionID,
-			},
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		if !result.Next() {
-			return nil, result.Err()
-		}
-
-		return result.Record().Values[0], nil
-
-	})
-
+	userSession, err := neo.GetAuthSession(dbSession, magicLink)
 	if err != nil {
 		return err
-	}
-
-	userSession, err := neo.UnmarshalAuthSession(result)
-	if err != nil {
-		a.Log.Errorw("error reading auth session from database, failed to convert struct", "sessionID", magicLink.SessionID)
-		return errors.New("error reading from the database")
 	}
 
 	ok, err = hash.BcryptCompare(userSession.HashedRememberToken, rememberToken.Value)
@@ -230,32 +150,16 @@ func (a authHandler) signInWithMagicLink(
 
 	a.Log.Info(rememberToken)
 
-	_, err = dbSession.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
-		_, err := tx.Run(`
-	MATCH (s:Session)
-	WHERE 
-		s.id = $sessionID
-	
-	SET s.activated = true
-	`,
-			map[string]interface{}{
-				"sessionID": magicLink.SessionID,
-			},
-		)
-
-		if err != nil {
-			return nil, err
-		}
-
-		return nil, nil
-
-	})
-
+	err = neo.CreateAuthSession(dbSession, magicLink)
 	if err != nil {
 		return err
 	}
 
-	authToken, err := a.Auth.EncryptAuthToken(magicLink.UserID, magicLink.SessionID, rememberToken.Value)
+	authToken, err := a.Auth.EncryptAuthToken(
+		magicLink.UserID,
+		magicLink.SessionID,
+		rememberToken.Value,
+	)
 	if err != nil {
 		return err
 	}
@@ -271,4 +175,15 @@ func (a authHandler) signInWithMagicLink(
 	http.SetCookie(w, &authCookie)
 
 	return web.Respond(ctx, w, nil, http.StatusNoContent)
+}
+
+func (a authHandler) userContext(
+	ctx context.Context,
+	w http.ResponseWriter,
+	r *http.Request,
+) error {
+
+	a.Log.Info("fetching user context")
+
+	return nil
 }

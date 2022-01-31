@@ -1,5 +1,5 @@
 import {ArrowRightIcon, InfoCircledIcon} from '@radix-ui/react-icons'
-import {PropsWithChildren, useEffect, useState} from 'react'
+import {PropsWithChildren, ReactNode, useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
 import {
   ActionFunction,
@@ -73,6 +73,7 @@ export const loader: LoaderFunction = async ({request}) => {
 
 type ActionData = {
   serverError?: string
+  signedIn?: boolean
 }
 
 export const action: ActionFunction = async ({request}) => {
@@ -101,7 +102,9 @@ export const action: ActionFunction = async ({request}) => {
   }
 
   let response = json<ActionData>(
-    {},
+    {
+      signedIn: true,
+    },
     {
       headers: {
         'Set-Cookie': tokenCookie,
@@ -122,6 +125,7 @@ function Info() {
 
 function SignInForm() {
   let [isValid, setIsValid] = useState(false)
+
   return (
     <>
       <div className="text-center">
@@ -188,6 +192,10 @@ function HasToken({magicLink}: {magicLink: string}) {
   )
 }
 
+function LinkSent() {
+  return <div>You Sign In link has been emailed to you.</div>
+}
+
 function SignInWrapper({children}: PropsWithChildren<{}>) {
   return (
     <div className="bg-white w-full h-screen">
@@ -202,21 +210,27 @@ export default function SignIn() {
   let loaderData = useLoaderData<LoaderData>()
   let actionData = useActionData<ActionData>()
 
+  console.log('============')
+
+  console.log(actionData)
+
   useEffect(() => {
     if (actionData?.serverError) {
       toast.error(actionData.serverError)
     }
   }, [actionData])
 
-  return (
-    <SignInWrapper>
-      {loaderData.magicLink ? (
-        <HasToken magicLink={loaderData.magicLink} />
-      ) : (
-        <SignInForm />
-      )}
-    </SignInWrapper>
-  )
+  let component: ReactNode
+
+  if (loaderData.magicLink) {
+    component = <HasToken magicLink={loaderData.magicLink} />
+  } else if (actionData?.signedIn) {
+    component = <LinkSent />
+  } else {
+    component = <SignInForm />
+  }
+
+  return <SignInWrapper>{component}</SignInWrapper>
 }
 
 export const ErrorBoundary: ErrorBoundaryComponent = ({error}) => {
