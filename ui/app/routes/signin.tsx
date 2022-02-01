@@ -54,7 +54,7 @@ export const loader: LoaderFunction = async ({request}) => {
   // for an auth token
 
   let serverRequest = new Request(
-    `http://localhost:3000/magicSignIn?token=${magicLink}`,
+    `http://localhost:3000/magicsignin?token=${magicLink}`,
     {
       method: 'POST',
       headers: {
@@ -67,11 +67,15 @@ export const loader: LoaderFunction = async ({request}) => {
 
   let resp = await fetch(serverRequest)
 
+  console.log('=============')
+  console.log(resp)
+
   if (!resp.ok) {
     throw Error('auth failed')
   }
 
-  console.log('2')
+  console.log('5')
+
   return forwardRespCookiesToRedirect(resp, '/')
 }
 

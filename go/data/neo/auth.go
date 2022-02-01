@@ -50,7 +50,7 @@ func MergeUserAndSession(
 			return nil, result.Err()
 		}
 
-		return result.Record().Values, nil
+		return result.Record().Values[0], nil
 
 	})
 
@@ -181,7 +181,7 @@ func GetUserContext(
 	
 	RETURN {
 		Session: 		session{.*, ID: sessionID},
-		User:			user{*., ID: userID}
+		User:			user{.*, ID: userID}
 	}
 	`,
 			map[string]interface{}{
