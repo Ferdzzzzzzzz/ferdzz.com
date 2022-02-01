@@ -141,7 +141,7 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Initialise Auth Service
 
-	encrypt, err := encrypt.NewService(cfg.Auth.Secret)
+	encrypt, err := encrypt.NewService("thishastobe32bytesforittowork!:)")
 	if err != nil {
 		return err
 	}

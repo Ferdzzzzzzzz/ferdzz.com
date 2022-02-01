@@ -8,49 +8,14 @@ import (
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
-func UnmarshalAuthSession(queryResult interface{}) (auth.Session, error) {
-	unmarshal := struct {
-		Id    int64
-		Props struct {
-			Start               int64
-			Exp                 int64
-			HashedRememberToken string
-			Activated           bool
-		}
-	}{}
-
-	err := mapstructure.Decode(queryResult, &unmarshal)
-	if err != nil {
-		return auth.Session{}, err
-	}
-
-	return auth.Session{
-		ID:                  unmarshal.Id,
-		Start:               unmarshal.Props.Start,
-		Exp:                 unmarshal.Props.Exp,
-		HashedRememberToken: unmarshal.Props.HashedRememberToken,
-		Activated:           unmarshal.Props.Activated,
-	}, nil
-}
-
-func UnmarshalIDSlice(queryResult interface{}) ([]int64, error) {
-	unmarshal := struct {
-		IDs []int64
-	}{}
-
-	err := mapstructure.Decode(struct{ IDs interface{} }{IDs: queryResult}, &unmarshal)
-	if err != nil {
-		return nil, err
-	}
-
-	return unmarshal.IDs, nil
-}
-
 func MergeUserAndSession(
 	dbSession neo4j.Session,
 	email string,
 	userSession auth.Session,
-) ([]int64, error) {
+) (struct {
+	UserID    int64
+	SessionID int64
+}, error) {
 
 	result, err := dbSession.WriteTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
@@ -63,7 +28,10 @@ func MergeUserAndSession(
 	SET s.Activated 			= false
 
 	CREATE (u)-[:HAS]->(s)
-	RETURN id(u), id(s)
+	RETURN {
+		UserID: id(u), 
+		SessionID: id(s)
+	}
 	`,
 
 			map[string]interface{}{
@@ -87,17 +55,30 @@ func MergeUserAndSession(
 	})
 
 	if err != nil {
-		return nil, err
+		return struct {
+			UserID    int64
+			SessionID int64
+		}{}, err
 	}
 
-	IDs, err := UnmarshalIDSlice(result)
-	if err != nil || len(IDs) < 2 {
-		return nil, errors.New("invalid read from DB")
+	unmarshal := struct {
+		UserID    int64
+		SessionID int64
+	}{}
+
+	err = mapstructure.Decode(result, &unmarshal)
+	if err != nil {
+		return struct {
+			UserID    int64
+			SessionID int64
+		}{}, err
 	}
 
-	return IDs, nil
+	return unmarshal, nil
 }
 
+// See Map Projections for query explanation
+// https://neo4j.com/docs/cypher-manual/4.4/syntax/maps/
 func GetAuthSession(
 	dbSession neo4j.Session,
 	magicLink auth.MagicLink,
@@ -110,7 +91,9 @@ func GetAuthSession(
 		id(u) = $UserID 		AND
 		id(s) = $SessionID
 	
-	RETURN s
+	WITH properties(s) AS session, id(s) AS ID
+
+	RETURN session{.*, ID}
 	`,
 			map[string]interface{}{
 				"UserID":    magicLink.UserID,
@@ -134,12 +117,14 @@ func GetAuthSession(
 		return auth.Session{}, err
 	}
 
-	userSession, err := UnmarshalAuthSession(result)
+	authSession := auth.Session{}
+
+	err = mapstructure.Decode(result, &authSession)
 	if err != nil {
 		return auth.Session{}, errors.New("error reading from the database")
 	}
 
-	return userSession, nil
+	return authSession, nil
 }
 
 func CreateAuthSession(
@@ -183,15 +168,20 @@ func GetUserContext(
 	result, err := dbSession.ReadTransaction(func(tx neo4j.Transaction) (interface{}, error) {
 		result, err := tx.Run(`
 	MATCH (u:User)-[:HAS]->(s:Session)
+	
 	WHERE 
 		id(u) = $UserID 		AND
 		id(s) = $SessionID
+
+	WITH 
+		properties(s)   AS session,
+		id(s)           AS sessionID,
+		properties(u)   AS user,
+		id(u)           AS userID
 	
 	RETURN {
-		sessionID: id(s),
-		session: properties(s),
-		userID: id(u),
-		user: properties(u)
+		Session: 		session{.*, ID: sessionID},
+		User:			user{*., ID: userID}
 	}
 	`,
 			map[string]interface{}{
@@ -216,10 +206,8 @@ func GetUserContext(
 	}
 
 	unmarshal := struct {
-		UserID    int64
-		User      auth.User
-		SessionID int64
-		Session   auth.Session
+		User    auth.User
+		Session auth.Session
 	}{}
 
 	err = mapstructure.Decode(result, &unmarshal)
@@ -228,10 +216,7 @@ func GetUserContext(
 	}
 
 	user := unmarshal.User
-	user.ID = unmarshal.UserID
-
 	session := unmarshal.Session
-	session.ID = unmarshal.SessionID
 
 	return user, session, nil
 }

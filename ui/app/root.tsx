@@ -41,7 +41,7 @@ export const loader: LoaderFunction = async ({request}) => {
     return notAuthenticated
   }
 
-  let resp = await fetch('http://localhost:3000/userContext', {
+  let resp = await fetch('http://localhost:3000/usercontext', {
     headers: {
       Accept: 'application/json',
       'Content-Type': 'application/json',
@@ -52,6 +52,8 @@ export const loader: LoaderFunction = async ({request}) => {
   if (resp.status === 401) {
     return notAuthenticated
   }
+
+  console.log(resp.status)
 
   if (!resp.ok) {
     throw Error('Could not authenticate')

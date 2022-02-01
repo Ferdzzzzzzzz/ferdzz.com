@@ -73,13 +73,13 @@ func (a authHandler) signInWithMagicLink(
 
 		a.Log.Info("writing user session to neo4j")
 
-		IDs, err := neo.MergeUserAndSession(dbSession, user.Email, userSession)
+		mergeResult, err := neo.MergeUserAndSession(dbSession, user.Email, userSession)
 		if err != nil {
 			return err
 		}
 
-		userID := IDs[0]
-		sessionID := IDs[1]
+		userID := mergeResult.UserID
+		sessionID := mergeResult.SessionID
 
 		// =====================================================================
 		// Create Magic Link and email to user
@@ -134,12 +134,12 @@ func (a authHandler) signInWithMagicLink(
 		return web.Respond(ctx, w, "Sign In link has expired, please request a new one.", http.StatusBadRequest)
 	}
 
-	userSession, err := neo.GetAuthSession(dbSession, magicLink)
+	authSession, err := neo.GetAuthSession(dbSession, magicLink)
 	if err != nil {
 		return err
 	}
 
-	ok, err = hash.BcryptCompare(userSession.HashedRememberToken, rememberToken.Value)
+	ok, err = hash.BcryptCompare(authSession.HashedRememberToken, rememberToken.Value)
 	if err != nil {
 		return err
 	}

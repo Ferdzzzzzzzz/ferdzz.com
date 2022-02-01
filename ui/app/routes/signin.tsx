@@ -85,7 +85,7 @@ export const action: ActionFunction = async ({request}) => {
   const formData = await request.formData()
   const email = formData.get('email')
 
-  let serverResponse = await fetch('http://localhost:3000/magicSignIn', {
+  let serverResponse = await fetch('http://localhost:3000/magicsignin', {
     method: 'POST',
     body: JSON.stringify({email: email}),
     headers: {

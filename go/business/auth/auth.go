@@ -62,20 +62,20 @@ type MagicLink struct {
 }
 
 type Token struct {
-	UserID              int64  `json:"userID"`
-	SessionID           int64  `json:"sessionId"`
-	HashedRememberToken string `json:"remember_token"`
+	UserID        int64  `json:"userID"`
+	SessionID     int64  `json:"sessionId"`
+	RememberToken string `json:"remember_token"`
 }
 
 func (s Service) NewAuthCookie(
 	userID,
 	sessionID int64,
-	hashedRememberToken string,
+	rememberToken string,
 ) (string, error) {
 	token := Token{
-		UserID:              userID,
-		SessionID:           sessionID,
-		HashedRememberToken: hashedRememberToken,
+		UserID:        userID,
+		SessionID:     sessionID,
+		RememberToken: rememberToken,
 	}
 
 	val, err := json.Marshal(token)
