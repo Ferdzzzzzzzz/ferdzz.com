@@ -2,8 +2,6 @@ package main
 
 import (
 	"fmt"
-
-	"github.com/ferdzzzzzzzz/ferdzz/core/encrypt"
 )
 
 // func main() {
@@ -58,26 +56,30 @@ import (
 // }
 
 func main() {
-	service, err := encrypt.NewService("monkeypoesmonkeypoesmonkeypoesmo")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	val, err := service.Encrypt("Hello Poes")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(val)
-
-	val, err = service.Decrypt("LxbncJe6TZnJpH-oioCDa6c8I0-k6yuC1Iju85Gp1VnZiaSRAsI=")
-	if err != nil {
-		fmt.Println(err)
-		return
-	}
-
-	fmt.Println(val)
-
+	fmt.Println("hello world")
 }
+
+// func main() {
+
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+
+// 	val, err := service.Encrypt("Hello Poes")
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+
+// 	fmt.Println(val)
+
+// 	val, err = service.Decrypt("LxbncJe6TZnJpH-oioCDa6c8I0-k6yuC1Iju85Gp1VnZiaSRAsI=")
+// 	if err != nil {
+// 		fmt.Println(err)
+// 		return
+// 	}
+
+// 	fmt.Println(val)
+
+// }

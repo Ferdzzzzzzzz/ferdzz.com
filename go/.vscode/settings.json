@@ -8,12 +8,8 @@
     "editor.fontFamily": "Fira Code",
     "editor.fontLigatures": true,
     "files.exclude": {
-        "**/.git": true,
-        "**/.gitignore": false,
-        "**/.dockerignore": false,
-        "**/coverage": true,
-        "**/vendor": false,
+        "**/vendor": true,
         "go.sum": true,
-        "go.mod": false,
+        "go.mod": true,
     }
 }

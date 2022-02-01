@@ -3,6 +3,8 @@ package auth
 import (
 	"encoding/json"
 	"errors"
+	"io/ioutil"
+	"os"
 	"time"
 
 	"github.com/ferdzzzzzzzz/ferdzz/core/encrypt"
@@ -20,11 +22,11 @@ var (
 )
 
 type Service struct {
-	encrypt encrypt.Service
+	encrypt *encrypt.Service
 	authURL string
 }
 
-func NewService(encrypt encrypt.Service, authURL string) Service {
+func NewService(encrypt *encrypt.Service, authURL string) Service {
 	return Service{
 		encrypt: encrypt,
 		authURL: authURL,
@@ -146,4 +148,29 @@ func (s Service) UnencryptMagicLink(link string) (MagicLink, error) {
 	}
 
 	return magicLink, nil
+}
+
+type SecretMap = map[string]string
+
+func ReadSecretsFromJson(path string) (SecretMap, error) {
+	file, err := os.Open(path)
+	if err != nil {
+		return nil, err
+	}
+
+	defer file.Close()
+
+	fileContent, err := ioutil.ReadAll(file)
+	if err != nil {
+		return nil, err
+	}
+
+	secretsMap := make(map[string]string, 0)
+	err = json.Unmarshal(fileContent, &secretsMap)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return secretsMap, nil
 }

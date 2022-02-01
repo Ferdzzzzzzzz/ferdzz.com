@@ -1,4 +1,4 @@
-import {ArrowRightIcon, InfoCircledIcon} from '@radix-ui/react-icons'
+import {ArrowRightIcon, Half2Icon, InfoCircledIcon} from '@radix-ui/react-icons'
 import {PropsWithChildren, ReactNode, useEffect, useState} from 'react'
 import toast from 'react-hot-toast'
 import {
@@ -10,6 +10,7 @@ import {
   redirect,
   useActionData,
   useLoaderData,
+  useTransition,
 } from 'remix'
 import {TextInput} from '~/components/TextInput'
 import {parseRequestCookies} from '~/core/parseCookieHeader'
@@ -23,6 +24,15 @@ type LoaderData = {
 }
 
 export const loader: LoaderFunction = async ({request}) => {
+  let cookies = parseRequestCookies(request)
+
+  let authToken = cookies.get('auth_token')
+  if (authToken) {
+    return redirect('/')
+  }
+
+  let rememberToken = cookies.get('remember_token')
+
   let url = new URL(request.url)
   let magicLink = url.searchParams.get('token')
 
@@ -33,17 +43,15 @@ export const loader: LoaderFunction = async ({request}) => {
     return json<LoaderData>({})
   }
 
-  // =====================================================================
-  // If we do have the sign in link, we need to trade it for an auth cookie
-
-  let cookies = parseRequestCookies(request)
-  let rememberToken = cookies.get('remember_token')
-
   // If we have a sign in link but no remember_token cookie, we redirect
 
   if (!rememberToken) {
     return redirect('/signin')
   }
+
+  // =====================================================================
+  // If we have the sign in link and remember_token, we need to trade it
+  // for an auth token
 
   let serverRequest = new Request(
     `http://localhost:3000/magicSignIn?token=${magicLink}`,
@@ -107,6 +115,7 @@ function Info() {
 
 function SignInForm() {
   let [isValid, setIsValid] = useState(false)
+  let transition = useTransition()
 
   return (
     <>
@@ -141,7 +150,10 @@ function SignInForm() {
           setIsValid(isValid)
         }}
       >
-        <fieldset className="space-y-5">
+        <fieldset
+          className="space-y-5"
+          disabled={transition.state === 'submitting'}
+        >
           <div>
             <TextInput
               type="email"
@@ -158,7 +170,11 @@ function SignInForm() {
             disabled={!isValid}
           >
             <p>Continue</p>
-            <ArrowRightIcon />
+            {transition.state === 'submitting' ? (
+              <Half2Icon className="animate-spin transition duration-500" />
+            ) : (
+              <ArrowRightIcon />
+            )}
           </button>
         </fieldset>
       </Form>

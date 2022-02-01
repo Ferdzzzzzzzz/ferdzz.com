@@ -23,7 +23,7 @@ func String(nBytes int) (string, error) {
 	return base64.URLEncoding.EncodeToString(b), nil
 }
 
-// Bytes will help us generate n random bytes, or return an error if there was
+// bytes will help us generate n random bytes, or return an error if there was
 // one. This uses the crypto/rand package so it is safe to use with  things like
 // remember tokens.
 func bytes(n int) ([]byte, error) {

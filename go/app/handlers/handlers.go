@@ -54,8 +54,8 @@ func APIMux(conf APIMuxConfig) *web.App {
 		return web.Respond(ctx, w, nil, http.StatusNoContent)
 	})
 
-	app.Handle(http.MethodPost, "/magicSignIn", authHandler.signInWithMagicLink)
-	app.Handle(http.MethodGet, "/userContext", authHandler.userContext)
+	app.Handle(http.MethodPost, "/magicsignin", authHandler.signInWithMagicLink)
+	app.Handle(http.MethodGet, "/usercontext", authHandler.userContext)
 	app.Handle(http.MethodPost, "/signout", authHandler.deleteAuthSession)
 
 	// Accept CORS 'OPTIONS' preflight requests if config has been provided.

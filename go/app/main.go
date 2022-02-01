@@ -37,7 +37,6 @@ func main() {
 		sugar.Errorw("startup error", "ERROR", err)
 		os.Exit(1)
 	}
-
 }
 
 func run(log *zap.SugaredLogger) error {
@@ -57,6 +56,9 @@ func run(log *zap.SugaredLogger) error {
 	log.Infow("startup", "GOMAXPROCS", runtime.GOMAXPROCS(0))
 
 	// =========================================================================
+	// Open Encryption Secrets
+
+	// =========================================================================
 	// Configuration
 
 	cfg := struct {
@@ -69,7 +71,6 @@ func run(log *zap.SugaredLogger) error {
 		}
 		Auth struct {
 			ClientAuthURL string `conf:"default:http://localhost:8787/signin?token="`
-			Secret        string `conf:"default:thishastobe32bytesforittowork!:),mask"`
 		}
 		Neo4j struct {
 			Host     string `conf:"default:bolt://localhost:7687"`

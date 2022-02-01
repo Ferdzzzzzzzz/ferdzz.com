@@ -8,31 +8,32 @@ import (
 	"io"
 )
 
+// we track the latest key so that the user of the api doesn't need to know what
+// to use for encryption
 type Service struct {
-	secret string
-	gcm    cipher.AEAD
+	gcm cipher.AEAD
 }
 
 // https://tutorialedge.net/golang/go-encrypt-decrypt-aes-tutorial/
-func NewService(secret string) (Service, error) {
+func NewService(secret string) (*Service, error) {
 
 	c, err := aes.NewCipher([]byte(secret))
 	if err != nil {
-		return Service{}, err
+		return &Service{}, err
 	}
 
 	gcm, err := cipher.NewGCM(c)
 	if err != nil {
-		return Service{}, err
+		return &Service{}, err
 	}
 
-	return Service{
-		secret: secret,
-		gcm:    gcm,
+	return &Service{
+		gcm: gcm,
 	}, nil
 }
 
 func (s Service) Encrypt(val string) (string, error) {
+
 	text := []byte(val)
 
 	nonce := make([]byte, s.gcm.NonceSize())
@@ -50,6 +51,7 @@ func (s Service) Encrypt(val string) (string, error) {
 }
 
 func (s Service) Decrypt(val string) (string, error) {
+
 	text, err := base64.URLEncoding.DecodeString(val)
 	if err != nil {
 		return "", err

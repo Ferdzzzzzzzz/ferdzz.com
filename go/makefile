@@ -11,8 +11,13 @@ run:
 play:
 	@go run ./utils/playground
 
-style:
-	@npx tailwindcss -o ./public/styles.css --watch
+test:
+	@go test ./... --short
+
+# requires some services to be running, be aware that these tests might do some 
+# random stuff, like drop everything in your db and refill with test data.
+test-long:
+	@go test ./...
 
 tidy:
 	@go mod tidy
