@@ -4,7 +4,7 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
+	"errors"
 	"io"
 )
 
@@ -45,24 +45,19 @@ func (s Service) Encrypt(val string) (string, error) {
 
 	encryptedValue := s.gcm.Seal(nonce, nonce, text, nil)
 
-	encodedValue := base64.URLEncoding.EncodeToString(encryptedValue)
-
-	return encodedValue, nil
+	return string(encryptedValue), nil
 }
 
-func (s Service) Decrypt(val string) (string, error) {
+func (s Service) Decrypt(text string) (string, error) {
 
-	text, err := base64.URLEncoding.DecodeString(val)
-	if err != nil {
-		return "", err
-	}
+	val := []byte(text)
 
 	nonceSize := s.gcm.NonceSize()
 	if len(text) < nonceSize {
-		return "", err
+		return "", errors.New("invalid encrypted value")
 	}
 
-	nonce, ciphertext := text[:nonceSize], text[nonceSize:]
+	nonce, ciphertext := val[:nonceSize], val[nonceSize:]
 	plaintext, err := s.gcm.Open(nil, nonce, ciphertext, nil)
 
 	if err != nil {

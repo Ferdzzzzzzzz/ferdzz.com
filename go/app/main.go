@@ -15,7 +15,6 @@ import (
 	"github.com/ardanlabs/conf"
 	"github.com/ferdzzzzzzzz/ferdzz/app/handlers"
 	"github.com/ferdzzzzzzzz/ferdzz/business/auth"
-	"github.com/ferdzzzzzzzz/ferdzz/core/encrypt"
 	"github.com/ferdzzzzzzzz/ferdzz/core/logger"
 	"github.com/ferdzzzzzzzz/ferdzz/data/neo"
 	"go.uber.org/automaxprocs/maxprocs"
@@ -70,7 +69,8 @@ func run(log *zap.SugaredLogger) error {
 			APIHost         string        `conf:"default:0.0.0.0:3000"`
 		}
 		Auth struct {
-			ClientAuthURL string `conf:"default:http://localhost:8787/signin?token="`
+			SecretFilePath string `conf:"default:./secrets.json"`
+			ClientAuthURL  string `conf:"default:http://localhost:8787/signin?token="`
 		}
 		Neo4j struct {
 			Host     string `conf:"default:bolt://localhost:7687"`
@@ -141,12 +141,15 @@ func run(log *zap.SugaredLogger) error {
 	// =========================================================================
 	// Initialise Auth Service
 
-	encrypt, err := encrypt.NewService("thishastobe32bytesforittowork!:)")
+	secretMap, err := auth.ReadSecretsFromJson(cfg.Auth.SecretFilePath)
 	if err != nil {
 		return err
 	}
 
-	authService := auth.NewService(encrypt, cfg.Auth.ClientAuthURL)
+	authService, err := auth.NewService(secretMap, cfg.Auth.ClientAuthURL)
+	if err != nil {
+		return err
+	}
 
 	// =========================================================================
 	// Start API Service

@@ -36,6 +36,9 @@ export const loader: LoaderFunction = async ({request}) => {
   let url = new URL(request.url)
   let magicLink = url.searchParams.get('token')
 
+  // localhost:3000?token=123hqjhewfjk23
+  // remember_token?
+
   // =====================================================================
   // If we don't have the magic link, we just want to be on the sign in page
 
@@ -66,9 +69,6 @@ export const loader: LoaderFunction = async ({request}) => {
   )
 
   let resp = await fetch(serverRequest)
-
-  console.log('=============')
-  console.log(resp)
 
   if (!resp.ok) {
     throw Error('auth failed')

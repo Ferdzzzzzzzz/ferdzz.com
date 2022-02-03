@@ -84,7 +84,7 @@ func (a authHandler) signInWithMagicLink(
 		// =====================================================================
 		// Create Magic Link and email to user
 
-		magicLink, err := a.Auth.GetNewMagicLink(userID, sessionID)
+		magicLink, err := a.Auth.GetMagicLink(userID, sessionID)
 		if err != nil {
 			return err
 		}
@@ -118,7 +118,7 @@ func (a authHandler) signInWithMagicLink(
 		return web.Respond(ctx, w, "You can only sign in with the link from the same browser you requested it.", http.StatusBadRequest)
 	}
 
-	magicLink, err := a.Auth.UnencryptMagicLink(encryptedMagicLink)
+	magicLink, err := a.Auth.UnmarshalMagicLink(encryptedMagicLink)
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (a authHandler) signInWithMagicLink(
 		return err
 	}
 
-	authToken, err := a.Auth.NewAuthCookie(
+	authToken, err := a.Auth.NewToken(
 		magicLink.UserID,
 		magicLink.SessionID,
 		rememberToken.Value,
@@ -205,7 +205,7 @@ func (a authHandler) userContext(
 		return web.Respond(ctx, w, "no auth_token cookie present on request", http.StatusUnauthorized)
 	}
 
-	authToken, err := a.Auth.UnencryptAuthToken(authTokenString.Value)
+	authToken, err := a.Auth.UnencryptToken(authTokenString.Value)
 	if err != nil {
 		return web.Respond(ctx, w, "bad auth token", http.StatusUnauthorized)
 	}
@@ -239,7 +239,7 @@ func (a authHandler) deleteAuthSession(
 
 	// =========================================================================
 	// Get user and session from cookie
-	authToken, err := a.Auth.UnencryptAuthToken(authTokenString.Value)
+	authToken, err := a.Auth.UnencryptToken(authTokenString.Value)
 	if err != nil {
 		return web.Respond(ctx, w, nil, http.StatusUnauthorized)
 	}

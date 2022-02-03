@@ -10,6 +10,7 @@ package is
 import (
 	"bytes"
 	"encoding/json"
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -18,6 +19,15 @@ func NotErr(t *testing.T, err error) {
 	t.Helper()
 	if err != nil {
 		t.Fatalf("expected err to be nil, but got %s", err.Error())
+	}
+}
+
+func ErrIs(t *testing.T, got, want error) {
+	t.Helper()
+
+	ok := errors.Is(got, want)
+	if !ok {
+		t.Fatalf("wanted error: %s, but got: %s", want.Error(), got.Error())
 	}
 }
 
@@ -37,7 +47,7 @@ func Equal(t *testing.T, want, got interface{}) {
 func NotNil(t *testing.T, got interface{}) {
 	t.Helper()
 	if got == nil {
-		t.Errorf("wanted something but got <nil>")
+		t.Fatal("wanted something but got <nil>")
 	}
 }
 
@@ -69,6 +79,7 @@ func DecodeJSON(t *testing.T, body *bytes.Buffer, got interface{}) {
 // This is used to distinguish long running "integration" tests from shorter
 // unit tests
 func ShortThenSkip(t *testing.T) {
+	t.Helper()
 	if testing.Short() {
 		t.Skip("skipping integration tests in short mode.")
 	}
