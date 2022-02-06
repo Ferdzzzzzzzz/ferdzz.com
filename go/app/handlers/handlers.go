@@ -43,6 +43,7 @@ func APIMux(conf APIMuxConfig) *web.App {
 		Log:  conf.Log,
 		DB:   conf.DB,
 		Auth: conf.AuthService,
+		V:    conf.V,
 	}
 
 	// this is a dummy route
