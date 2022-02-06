@@ -24,7 +24,7 @@ export function Navbar() {
             </li>
             <li>
               <Link
-                to="/editor"
+                to="/admin/editor"
                 className="hover:text-purple-600 transition-colors duration-100"
               >
                 editor

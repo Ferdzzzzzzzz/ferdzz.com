@@ -220,7 +220,7 @@ func (s Service) UnmarshalMagicLink(link string) (MagicLink, error) {
 		return MagicLink{}, ErrInvalidMagicLink
 	}
 
-	keyStr := result[2]
+	keyStr := result[0]
 	encryptedValue := result[1]
 
 	key, err := strconv.ParseUint(keyStr, 10, 32)

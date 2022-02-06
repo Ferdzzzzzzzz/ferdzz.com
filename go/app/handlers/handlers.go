@@ -9,6 +9,7 @@ import (
 	"github.com/ferdzzzzzzzz/ferdzz/business/auth"
 	"github.com/ferdzzzzzzzz/ferdzz/business/mid"
 	"github.com/ferdzzzzzzzz/ferdzz/core/web"
+	"github.com/go-playground/validator/v10"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"go.uber.org/zap"
 )
@@ -20,6 +21,7 @@ type APIMuxConfig struct {
 	DevMode     bool
 	DB          neo4j.Driver
 	AuthService auth.Service
+	V           *validator.Validate
 }
 
 func APIMux(conf APIMuxConfig) *web.App {

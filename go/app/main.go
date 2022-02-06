@@ -17,6 +17,7 @@ import (
 	"github.com/ferdzzzzzzzz/ferdzz/business/auth"
 	"github.com/ferdzzzzzzzz/ferdzz/core/logger"
 	"github.com/ferdzzzzzzzz/ferdzz/data/neo"
+	"github.com/go-playground/validator/v10"
 	"go.uber.org/automaxprocs/maxprocs"
 	"go.uber.org/zap"
 )
@@ -116,6 +117,11 @@ func run(log *zap.SugaredLogger) error {
 	}
 
 	// =========================================================================
+	// Initialize Validator
+
+	validator := validator.New()
+
+	// =========================================================================
 	// Database Support
 
 	// Create connectivity to the database.
@@ -170,6 +176,7 @@ func run(log *zap.SugaredLogger) error {
 		DevMode:     *devMode,
 		DB:          neoDriver,
 		AuthService: authService,
+		V:           validator,
 	})
 
 	// Construct a server to service the requests against the mux.

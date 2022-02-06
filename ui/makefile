@@ -2,7 +2,7 @@
 .PHONY: run
 # start cloudflare worker
 run:
-	@npm run start
+	@npm run run-dev
 
 # compile remix and tailwind
 c:

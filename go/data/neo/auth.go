@@ -135,9 +135,16 @@ func CreateAuthSession(
 		_, err := tx.Run(`
 	MATCH (s:Session)
 	WHERE 
-		s.id = $sessionID
-	
-	SET s.activated = true
+		id(s) = $sessionID
+	SET s.Activated = true
+
+	UNION
+
+	MATCH (unactivatedSessions:Session)
+	WHERE
+		unactivatedSessions.Activated = false
+	DETACH DELETE 
+		unactivatedSessions
 	`,
 			map[string]interface{}{
 				"sessionID": magicLink.SessionID,

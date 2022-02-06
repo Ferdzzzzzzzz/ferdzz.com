@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"time"
@@ -12,6 +13,7 @@ import (
 	"github.com/ferdzzzzzzzz/ferdzz/core/rand"
 	"github.com/ferdzzzzzzzz/ferdzz/core/web"
 	"github.com/ferdzzzzzzzz/ferdzz/data/neo"
+	"github.com/go-playground/validator/v10"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 	"go.uber.org/zap"
 )
@@ -20,6 +22,7 @@ type authHandler struct {
 	Log  *zap.SugaredLogger
 	DB   neo4j.Driver
 	Auth auth.Service
+	V    *validator.Validate
 }
 
 func (a authHandler) signInWithMagicLink(
@@ -42,12 +45,17 @@ func (a authHandler) signInWithMagicLink(
 		// fmt.Println(r.Body)
 
 		user := struct {
-			Email string
+			Email string `validate:"required,email"`
 		}{}
 
 		err := json.NewDecoder(r.Body).Decode(&user)
-		if err != nil || user.Email == "" {
-			return web.Respond(ctx, w, "Bad Request: user email required", http.StatusBadRequest)
+		if err != nil {
+			return web.Respond(ctx, w, "Bad Request: couldn't parse JSON", http.StatusBadRequest)
+		}
+
+		err = a.V.Struct(user)
+		if err != nil {
+			return web.Respond(ctx, w, "Bad Request: invalid user email", http.StatusBadRequest)
 		}
 
 		// Create remember token
@@ -119,20 +127,17 @@ func (a authHandler) signInWithMagicLink(
 	}
 
 	magicLink, err := a.Auth.UnmarshalMagicLink(encryptedMagicLink)
-	if err != nil {
+	if errors.Is(err, auth.ErrExpiredMagicLink) {
+		return web.Respond(ctx, w, "Sign In link has expired, please request a new one.", http.StatusUnauthorized)
+
+	} else if errors.Is(err, auth.ErrInvalidMagicLink) {
+		return web.Respond(ctx, w, "Invalid MagicLink.", http.StatusBadRequest)
+	} else if err != nil {
 		return err
 	}
 
 	a.Log.Info(magicLink)
 	// check if link has expired
-
-	// Helper Sentence -> 	If the time that the magic link expires is before
-	// 						now, it has expired
-	linkIsExpired := time.Unix(magicLink.Exp, 0).Before(time.Now())
-
-	if linkIsExpired {
-		return web.Respond(ctx, w, "Sign In link has expired, please request a new one.", http.StatusBadRequest)
-	}
 
 	authSession, err := neo.GetAuthSession(dbSession, magicLink)
 	if err != nil {
@@ -145,10 +150,9 @@ func (a authHandler) signInWithMagicLink(
 	}
 
 	if !ok {
+		a.Log.Info("bad link, could not validate rememberToken")
 		return web.Respond(ctx, w, "Failed to authenticate.", http.StatusBadRequest)
 	}
-
-	a.Log.Info(rememberToken)
 
 	err = neo.CreateAuthSession(dbSession, magicLink)
 	if err != nil {
