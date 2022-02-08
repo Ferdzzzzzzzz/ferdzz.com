@@ -101,6 +101,10 @@ func GetAuthSession(
 			},
 		)
 
+		if neo4j.IsNeo4jError(err) {
+
+		}
+
 		if err != nil {
 			return nil, err
 		}

@@ -14,6 +14,7 @@ import {Navbar} from './containers/Navbar'
 import {Toaster} from 'react-hot-toast'
 import {JsonToUser, User} from './containers/Auth'
 import {parseRequestCookies} from './core/parseCookieHeader'
+import {DefaultLayout} from './components/DefaultLayout'
 
 export const meta: MetaFunction = () => {
   return {title: 'ferdzz.com'}
@@ -83,8 +84,9 @@ export default function App() {
       </head>
       <body className="selection:bg-yellow-400">
         <Toaster />
-        <Navbar />
-        <Outlet />
+        <DefaultLayout>
+          <Outlet />
+        </DefaultLayout>
         <ScrollRestoration />
         <Scripts />
         {process.env.NODE_ENV === 'development' && <LiveReload />}

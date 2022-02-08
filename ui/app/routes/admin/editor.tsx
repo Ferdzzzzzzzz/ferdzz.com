@@ -1,5 +1,4 @@
 import {useEditor, EditorContent} from '@tiptap/react'
-import {DefaultLayout} from '~/components/DefaultLayout'
 import {Document} from '@tiptap/extension-document'
 import Paragraph from '@tiptap/extension-paragraph'
 import Text from '@tiptap/extension-text'
@@ -7,30 +6,30 @@ import ListItem from '@tiptap/extension-list-item'
 import BulletList from '@tiptap/extension-bullet-list'
 import Heading from '@tiptap/extension-heading'
 import OrderedList from '@tiptap/extension-ordered-list'
-import {ScrollArea} from '~/components/ScrollArea'
+import * as ScrollArea from '@radix-ui/react-scroll-area'
+import Collaboration from '@tiptap/extension-collaboration'
+import {useYDoc} from '~/core/hooks'
+import * as Y from 'yjs'
+import Bold from '@tiptap/extension-bold'
+import Italic from '@tiptap/extension-italic'
+import Link from '@tiptap/extension-link'
+import Strike from '@tiptap/extension-strike'
+import Superscript from '@tiptap/extension-superscript'
+import Subscript from '@tiptap/extension-subscript'
+import TextStyle from '@tiptap/extension-text-style'
+import Underline from '@tiptap/extension-underline'
 
-const content = `
-<p>
-  That’s a boring paragraph followed by a fenced code block:
-</p>
-<pre><code class="language-javascript">for (var i=1; i <= 20; i++)
-  {
-    if (i % 15 == 0)
-      console.log("FizzBuzz");
-    else if (i % 3 == 0)
-      console.log("Fizz");
-    else if (i % 5 == 0)
-      console.log("Buzz");
-    else
-      console.log(i);
-  }
-  </code></pre>
-`
+import TextAlign from '@tiptap/extension-text-align'
+import {ActionMenu} from './ActionMenu'
 
-export default function Editor() {
+function EditorSection({ydoc}: {ydoc: Y.Doc}) {
   const editor = useEditor({
+    // content: '<p style="text-align: right">right</p>',
     editable: true,
     extensions: [
+      Collaboration.configure({
+        document: ydoc,
+      }),
       Document,
       Text,
       Paragraph,
@@ -38,23 +37,57 @@ export default function Editor() {
       BulletList,
       ListItem,
       Heading,
+      Bold,
+      Italic,
+      Link,
+      Strike,
+      Superscript,
+      Subscript,
+      TextStyle,
+      Underline,
+      TextAlign.configure({types: ['heading', 'paragraph']}),
     ],
-    content,
     editorProps: {
       attributes: {
-        class:
-          'outline-none border rounded border-pink-400 p-10 prose prose-slate prose-sm min-w-full h-full',
+        class: 'outline-none prose prose-slate prose-sm',
       },
     },
   })
 
   return (
-    <DefaultLayout>
-      <div className="w-2/3 mx-auto">
-        <ScrollArea className="h-screen bg-red-100">
-          <EditorContent editor={editor} />
-        </ScrollArea>
+    <div className="h-full flex">
+      <div className="w-1/6 bg-slate-50 border-r p-4">
+        <p>Filetree</p>
       </div>
-    </DefaultLayout>
+
+      <ScrollArea.Root className="grow h-[100%]">
+        <ScrollArea.Viewport className="h-full">
+          <div className="max-w-2xl mx-auto">
+            <Spacer />
+            <EditorContent editor={editor} />
+            <Spacer />
+          </div>
+        </ScrollArea.Viewport>
+        <ScrollArea.Scrollbar className="w-1">
+          <ScrollArea.Thumb className="w-1 bg-slate-400 rounded" />
+        </ScrollArea.Scrollbar>
+      </ScrollArea.Root>
+
+      <ActionMenu editor={editor} />
+    </div>
   )
+}
+
+function Spacer() {
+  return <div className="h-20" />
+}
+
+export default function EditorView() {
+  const ydoc = useYDoc()
+
+  if (!ydoc) {
+    return <div>Loading...</div>
+  }
+
+  return <EditorSection ydoc={ydoc} />
 }
