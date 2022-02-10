@@ -1,0 +1,28 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "go",
+            "request": "launch",
+            "name": "Debug Api",
+            "mode": "debug",
+            "program": "${workspaceFolder}/apps/api/main.go",
+            "env": {
+                //   "MERCHANT_DATASTORE_USE_LOCAL_EMULATOR": true
+            }
+        },
+        {
+            "type": "go",
+            "request": "launch",
+            "name": "Debug Revise CLI",
+            "mode": "debug",
+            "program": "${workspaceFolder}/apps/build/cli/main.go",
+            "env": {
+                //   "MERCHANT_DATASTORE_USE_LOCAL_EMULATOR": true
+            }
+        }
+    ]
+}

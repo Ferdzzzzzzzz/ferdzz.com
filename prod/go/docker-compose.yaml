@@ -1,0 +1,5 @@
+services:
+  api:
+    image: revise/ferdzz_api:0.0.1
+    ports:
+      - "4000:4000"

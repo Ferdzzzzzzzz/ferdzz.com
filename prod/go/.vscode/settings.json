@@ -1,0 +1,15 @@
+{
+    "editor.rulers": [
+        80
+    ],
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#ff4081"
+    },
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
+    "files.exclude": {
+        "**/vendor": false,
+        "go.sum": true,
+        "go.mod": true,
+    }
+}

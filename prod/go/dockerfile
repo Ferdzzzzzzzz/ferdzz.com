@@ -1,0 +1,35 @@
+# Build the Go Binary.
+FROM golang:1.17 as build
+ENV CGO_ENABLED 0
+ARG VCS_REF
+
+# Create the service directory and the copy the module files first and then
+# download the dependencies. If this doesn't change, we won't need to do this
+# again in future builds.
+RUN mkdir /service
+COPY go.* /service/
+WORKDIR /service
+RUN go mod download
+
+# Copy the source code into the container.
+COPY . /service
+
+# Build the service binary. We are doing this last since this will be different
+# every time we run through this process.
+WORKDIR /service/apps/api
+RUN go build -o ferdzz-api -ldflags "-X main.build=${VCS_REF}"
+
+
+# ==============================================================================
+# Run the Go Binary in Alpine.
+FROM alpine:latest
+ARG BUILD_DATE
+ARG VCS_REF
+COPY --from=build /service/apps/api/ferdzz-api /service/ferdzz-api
+WORKDIR /service
+EXPOSE 4000
+CMD ["./ferdzz-api"]
+
+LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+    org.opencontainers.image.title="ferdzz_api" \
+    org.opencontainers.image.revision="${VCS_REF}"
