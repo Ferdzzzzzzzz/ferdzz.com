@@ -28,13 +28,13 @@ func run() error {
 	signal.Notify(shutdown, syscall.SIGINT, syscall.SIGTERM)
 
 	server := http.Server{
-		Addr: ":4000",
+		Addr: ":80",
 		Handler: http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			fmt.Fprint(w, "Hello World")
 		}),
 	}
 
-	fmt.Println("listening at :4000")
+	fmt.Println("listening at :80")
 
 	serverErrors := make(chan error, 1)
 
