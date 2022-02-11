@@ -40,7 +40,7 @@ build-api-container:
 # host.docker.internal: docs.docker.com/desktop/mac/networking/
 run-api-container:
 	@docker run \
-		-p 4000:4000 \
+		-p 8080:8080 \
 		ferdzz_api:0.0.1
 
 # -e API_PORT=4000 \
