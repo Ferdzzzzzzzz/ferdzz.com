@@ -60,5 +60,5 @@ upload-container:
 # https://docs.docker.com/cloud/ecs-integration/
 
 deploy:
-	@docker --context ferdzz.com compose up 
+	@fly deploy
 

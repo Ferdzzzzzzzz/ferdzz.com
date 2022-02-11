@@ -1,6 +1,6 @@
-# fly.toml file generated for ferdzz on 2022-02-10T17:11:49+02:00
+# fly.toml file generated for ferdzzapi on 2022-02-11T21:44:14+02:00
 
-app = "ferdzz"
+app = "ferdzzapi"
 
 kill_signal = "SIGINT"
 kill_timeout = 5
