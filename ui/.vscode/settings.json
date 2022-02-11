@@ -1,0 +1,23 @@
+{
+    "workbench.colorTheme": "Rescript Light Theme",
+    "editor.rulers": [
+        80
+    ],
+    "workbench.colorCustomizations": {
+        "editorRuler.foreground": "#ff4081"
+    },
+    "editor.fontFamily": "Fira Code",
+    "editor.fontLigatures": true,
+    "files.exclude": {
+        "**/.git": true,
+        "**/lib": true,
+        "**/.gitignore": true,
+        "**/node_modules": true,
+        "**/build": true,
+        "**/.cache": true,
+        "package-lock.json": true,
+        "tsconfig.json": true,
+        "remix.env.d.ts": true,
+        ".prettierrc": true,
+    }
+}

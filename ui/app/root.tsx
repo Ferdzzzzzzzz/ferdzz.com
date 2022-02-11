@@ -5,17 +5,17 @@ import {
   Outlet,
   Scripts,
   ScrollRestoration,
-} from "remix";
-import type { MetaFunction } from "remix";
-import styles from "./tailwind.css";
+} from 'remix'
+import type {MetaFunction} from 'remix'
+import styles from './tailwind.css'
 
 export function links() {
-  return [{ rel: "stylesheet", href: styles }];
+  return [{rel: 'stylesheet', href: styles}]
 }
 
 export const meta: MetaFunction = () => {
-  return { title: "ferdzz.com" };
-};
+  return {title: 'ferdzz.com'}
+}
 
 export default function App() {
   return (
@@ -30,8 +30,8 @@ export default function App() {
         <Outlet />
         <ScrollRestoration />
         <Scripts />
-        {process.env.NODE_ENV === "development" && <LiveReload />}
+        {process.env.NODE_ENV === 'development' && <LiveReload />}
       </body>
     </html>
-  );
+  )
 }
