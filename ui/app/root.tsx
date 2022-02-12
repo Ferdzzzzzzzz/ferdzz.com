@@ -1,8 +1,10 @@
 import {
   Links,
   LiveReload,
+  LoaderFunction,
   Meta,
   Outlet,
+  redirect,
   Scripts,
   ScrollRestoration,
 } from 'remix'
@@ -15,6 +17,16 @@ export function links() {
 
 export const meta: MetaFunction = () => {
   return {title: 'ferdzz.com'}
+}
+
+export const loader: LoaderFunction = ({request}) => {
+  if (request.headers.get('X-Forwarded-Proto') == 'http') {
+    let url = new URL(request.url)
+    url.pathname
+    return redirect('https://' + url.host + url.pathname)
+  }
+
+  return null
 }
 
 export default function App() {
