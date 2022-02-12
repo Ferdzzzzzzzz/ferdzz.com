@@ -10,6 +10,8 @@ import {
 } from 'remix'
 import type {MetaFunction} from 'remix'
 import styles from './tailwind.css'
+import {isDev} from './utils/isDev'
+import {DefaultLayout} from './containers/DefaultLayout'
 
 export function links() {
   return [{rel: 'stylesheet', href: styles}]
@@ -39,10 +41,13 @@ export default function App() {
         <Links />
       </head>
       <body>
-        <Outlet />
+        <DefaultLayout>
+          <Outlet />
+        </DefaultLayout>
+
         <ScrollRestoration />
         <Scripts />
-        {process.env.NODE_ENV === 'development' && <LiveReload />}
+        {isDev() && <LiveReload />}
       </body>
     </html>
   )
