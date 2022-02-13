@@ -8,9 +8,8 @@ import {
 import {PropsWithChildren} from 'react'
 import {Link, NavLink} from 'remix'
 import * as Dialog from '@radix-ui/react-dialog'
-import {keyframes} from '@stitches/react'
 import {css, styled} from '~/utils/stitches.config'
-import {blackA, blue, pink} from '@radix-ui/colors'
+import {blue} from '@radix-ui/colors'
 import {SrOnly} from '~/components/SrOnly'
 
 const TitleStyle = styled(Link, {
@@ -21,42 +20,17 @@ function Title() {
   return <TitleStyle to={'/'}>ferdzz.com</TitleStyle>
 }
 
-const overlayShow = keyframes({
-  '0%': {opacity: 0},
-  '100%': {opacity: 1},
-})
-
-const contentShow = keyframes({
-  '0%': {opacity: 0, transform: 'translate(-50%, -48%) scale(.96)'},
-  '100%': {opacity: 1, transform: 'translate(-50%, -50%) scale(1)'},
-})
-
-const StyledOverlay = styled(Dialog.Overlay, {
-  backgroundColor: blackA.blackA9,
-  display: 'fixed',
-  inset: 0,
-  '@media (prefers-reduced-motion: no-preference)': {
-    animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
-  },
-})
-
 const DialogContent = styled(Dialog.Content, {
   backgroundColor: 'white',
   borderRadius: 6,
-  boxShadow:
-    'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
   position: 'fixed',
-  top: '2%',
+  top: '10%',
   left: '50%',
   transform: 'translate(-50%, 0%)',
-  width: '95vw',
-  maxWidth: '450px',
+  width: '100vw',
   height: '80vh',
   maxHeight: '85vh',
   padding: 25,
-  // '@media (prefers-reduced-motion: no-preference)': {
-  //   animation: `${contentShow} 300ms cubic-bezier(0.16, 1, 0.3, 1)`,
-  // },
   '&:focus': {outline: 'none'},
 })
 
@@ -84,39 +58,43 @@ const DialogHeader = styled('div', {
   justifyContent: 'space-between',
 })
 
+function MobileNavMenu() {
+  return (
+    <Dialog.Root>
+      <Dialog.Trigger>
+        <DialogTrigger />
+      </Dialog.Trigger>
+      <Dialog.Portal>
+        <DialogContent>
+          <DialogHeader>
+            <Title />
+            <Dialog.Close>
+              <Cross1Icon />
+            </Dialog.Close>
+          </DialogHeader>
+
+          <div>Some Links</div>
+
+          <SrOnly>
+            <Dialog.Title>navbar</Dialog.Title>
+          </SrOnly>
+
+          <SrOnly>
+            <Dialog.Description>
+              Navigate to different pages on the website.
+            </Dialog.Description>
+          </SrOnly>
+        </DialogContent>
+      </Dialog.Portal>
+    </Dialog.Root>
+  )
+}
+
 export function MobileNavBar() {
   return (
     <MobileNavBarLayout>
       <Title />
-      <Dialog.Root>
-        <Dialog.Trigger>
-          <DialogTrigger />
-        </Dialog.Trigger>
-        <Dialog.Portal>
-          <StyledOverlay />
-
-          <DialogContent>
-            <DialogHeader>
-              <Title />
-              <Dialog.Close>
-                <Cross1Icon />
-              </Dialog.Close>
-            </DialogHeader>
-
-            <div>Some Links</div>
-
-            <SrOnly>
-              <Dialog.Title>navbar</Dialog.Title>
-            </SrOnly>
-
-            <SrOnly>
-              <Dialog.Description>
-                Navigate to different pages on the website.
-              </Dialog.Description>
-            </SrOnly>
-          </DialogContent>
-        </Dialog.Portal>
-      </Dialog.Root>
+      <MobileNavMenu />
     </MobileNavBarLayout>
   )
 }
