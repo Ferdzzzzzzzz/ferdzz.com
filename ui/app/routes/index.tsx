@@ -5,6 +5,7 @@ const Layout = styled('div', {
   left: '50%',
   top: '50%',
   transform: '-translateX(50%) -translateY(50%)',
+  padding: '2.5rem',
 })
 
 export default function Index() {

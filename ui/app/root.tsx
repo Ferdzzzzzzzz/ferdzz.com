@@ -12,6 +12,7 @@ import type {MetaFunction} from 'remix'
 import styles from './tailwind.css'
 import {isDev} from './utils/isDev'
 import {DefaultLayout} from './containers/DefaultLayout'
+import {getCssText} from './utils/stitches.config'
 
 export function links() {
   return [{rel: 'stylesheet', href: styles}]
@@ -37,6 +38,7 @@ export default function App() {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <style id="stitches" dangerouslySetInnerHTML={{__html: getCssText()}} />
         <Meta />
         <Links />
       </head>
