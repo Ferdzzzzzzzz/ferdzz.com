@@ -1,17 +1,21 @@
 import {PropsWithChildren} from 'react'
+import {styled} from '~/utils/stitches.config'
 import {MobileNavBar, TabletNavBar} from './Navbar'
+
+const Screen = styled('div', {
+  height: '100vh',
+})
+
+const Content = styled('div', {
+  height: '90vh',
+})
 
 export function DefaultLayout({children}: PropsWithChildren<{}>) {
   return (
-    <div className="h-screen">
-      <div className="hidden sm:block h-[5%]">
-        <TabletNavBar />
-      </div>
-
-      <div className="h-[90%]">{children}</div>
-      <div className="h-[10%] border-t bg-slate-50 sm:hidden">
-        <MobileNavBar />
-      </div>
-    </div>
+    <Screen>
+      <MobileNavBar />
+      <TabletNavBar />
+      <Content>{children}</Content>
+    </Screen>
   )
 }

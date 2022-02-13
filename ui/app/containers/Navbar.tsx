@@ -1,77 +1,218 @@
 import {
+  Cross1Icon,
   HamburgerMenuIcon,
   HomeIcon,
-  LayersIcon,
+  InfoCircledIcon,
   StackIcon,
 } from '@radix-ui/react-icons'
 import {PropsWithChildren} from 'react'
 import {Link, NavLink} from 'remix'
+import * as Dialog from '@radix-ui/react-dialog'
+import {keyframes} from '@stitches/react'
+import {css, styled} from '~/utils/stitches.config'
+import {blackA, blue, pink} from '@radix-ui/colors'
+import {SrOnly} from '~/components/SrOnly'
+
+const TitleStyle = styled(Link, {
+  fontWeight: 600,
+})
+
+function Title() {
+  return <TitleStyle to={'/'}>ferdzz.com</TitleStyle>
+}
+
+const overlayShow = keyframes({
+  '0%': {opacity: 0},
+  '100%': {opacity: 1},
+})
+
+const contentShow = keyframes({
+  '0%': {opacity: 0, transform: 'translate(-50%, -48%) scale(.96)'},
+  '100%': {opacity: 1, transform: 'translate(-50%, -50%) scale(1)'},
+})
+
+const StyledOverlay = styled(Dialog.Overlay, {
+  backgroundColor: blackA.blackA9,
+  display: 'fixed',
+  inset: 0,
+  '@media (prefers-reduced-motion: no-preference)': {
+    animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`,
+  },
+})
+
+const DialogContent = styled(Dialog.Content, {
+  backgroundColor: 'white',
+  borderRadius: 6,
+  boxShadow:
+    'hsl(206 22% 7% / 35%) 0px 10px 38px -10px, hsl(206 22% 7% / 20%) 0px 10px 20px -15px',
+  position: 'fixed',
+  top: '2%',
+  left: '50%',
+  transform: 'translate(-50%, 0%)',
+  width: '95vw',
+  maxWidth: '450px',
+  height: '80vh',
+  maxHeight: '85vh',
+  padding: 25,
+  // '@media (prefers-reduced-motion: no-preference)': {
+  //   animation: `${contentShow} 300ms cubic-bezier(0.16, 1, 0.3, 1)`,
+  // },
+  '&:focus': {outline: 'none'},
+})
+
+const MobileNavBarLayout = styled('div', {
+  height: '10vh',
+  borderBottomWidth: '1px',
+  justifyContent: 'space-between',
+  paddingLeft: '1rem',
+  paddingRight: '1rem',
+  alignItems: 'center',
+  display: 'flex',
+  '@sm': {
+    display: 'none',
+  },
+})
+
+const DialogTrigger = styled(HamburgerMenuIcon, {
+  height: '1.25rem',
+  width: '1.25rem',
+})
+
+const DialogHeader = styled('div', {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+})
 
 export function MobileNavBar() {
   return (
-    <div className="flex justify-between px-10 items-center h-full text-slate-400">
-      <NavLink
-        to="/"
-        className={({isActive}) => (isActive ? 'text-slate-700' : '')}
-      >
-        <HomeIcon className="h-5 w-5" />
-      </NavLink>
-      <NavLink
-        to="/blog"
-        className={({isActive}) => (isActive ? 'text-slate-700' : '')}
-      >
-        <LayersIcon className="h-5 w-5" />
-      </NavLink>
-      <HamburgerMenuIcon className="h-5 w-5" />
-    </div>
+    <MobileNavBarLayout>
+      <Title />
+      <Dialog.Root>
+        <Dialog.Trigger>
+          <DialogTrigger />
+        </Dialog.Trigger>
+        <Dialog.Portal>
+          <StyledOverlay />
+
+          <DialogContent>
+            <DialogHeader>
+              <Title />
+              <Dialog.Close>
+                <Cross1Icon />
+              </Dialog.Close>
+            </DialogHeader>
+
+            <div>Some Links</div>
+
+            <SrOnly>
+              <Dialog.Title>navbar</Dialog.Title>
+            </SrOnly>
+
+            <SrOnly>
+              <Dialog.Description>
+                Navigate to different pages on the website.
+              </Dialog.Description>
+            </SrOnly>
+          </DialogContent>
+        </Dialog.Portal>
+      </Dialog.Root>
+    </MobileNavBarLayout>
   )
 }
 
-function NavBarLink({children, to}: PropsWithChildren<{to: string}>) {
+const link = css({
+  display: 'flex',
+  alignItems: 'center',
+  marginLeft: '2rem',
+  fontSize: '0.875rem',
+  lineHeight: '1.25rem',
+})
+
+const activeLink = css({
+  marginLeft: '2rem',
+  display: 'flex',
+  alignItems: 'center',
+  fontSize: '0.875rem',
+  lineHeight: '1.25rem',
+  color: blue.blue10,
+})
+
+const NavBarLink = function NavBarLink({
+  children,
+  to,
+}: PropsWithChildren<{to: string}>) {
   return (
-    <div className="text-slate-500">
-      <NavLink
-        to={to}
-        className={({isActive}) =>
-          'flex items-center space-x-2 text-sm ' +
-          (isActive ? 'text-slate-800' : '')
-        }
-      >
-        {children}
-      </NavLink>
-    </div>
+    <NavLink
+      to={to}
+      className={({isActive}) => (isActive ? activeLink() : link())}
+    >
+      {children}
+    </NavLink>
   )
 }
+
+const DesktopNavLinksLayout = styled('div', {
+  display: 'none',
+  '@lg': {
+    display: 'flex',
+  },
+})
+
+function DesktopNavLinks() {
+  return (
+    <DesktopNavLinksLayout>
+      <NavBarLink to="">
+        <HomeIcon />
+        <div>home</div>
+      </NavBarLink>
+      <NavBarLink to="about">
+        <InfoCircledIcon />
+        <div>about</div>
+      </NavBarLink>
+      <NavBarLink to="blog">
+        <StackIcon />
+        <div>blog</div>
+      </NavBarLink>
+    </DesktopNavLinksLayout>
+  )
+}
+
+const TabletNavBarLayout = styled('div', {
+  height: '5vh',
+  display: 'none',
+  borderBottomWidth: '1px',
+  paddingLeft: '2.5rem',
+  paddingRight: '2.5rem',
+  '@sm': {
+    display: 'block',
+  },
+})
+
+const TabletNavBarContent = styled('div', {
+  maxWidth: '56rem',
+  marginLeft: 'auto',
+  marginRight: 'auto',
+  height: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+})
+
+const TabletNavMenu = styled(HamburgerMenuIcon, {
+  '@lg': {
+    display: 'none',
+  },
+})
 
 export function TabletNavBar() {
   return (
-    <div className="h-full bg-slate-50 border-b px-10">
-      <div className="max-w-4xl mx-auto h-full flex items-center justify-between">
-        <Link className="text-slate-700 font-semibold" to={'/'}>
-          ferdzz.com
-        </Link>
-
-        {
-          //Desktop NavLinks
-        }
-        <div className="space-x-8  hidden lg:flex">
-          <NavBarLink to="">
-            <HomeIcon />
-            <div>home</div>
-          </NavBarLink>
-          <NavBarLink to="blog">
-            <StackIcon />
-            <div>blog</div>
-          </NavBarLink>
-        </div>
-
-        {
-          //Tablet Hamburger
-        }
-        <div className="text-slate-600 lg:hidden">
-          <HamburgerMenuIcon />
-        </div>
-      </div>
-    </div>
+    <TabletNavBarLayout>
+      <TabletNavBarContent>
+        <Title />
+        <DesktopNavLinks />
+        <TabletNavMenu />
+      </TabletNavBarContent>
+    </TabletNavBarLayout>
   )
 }
