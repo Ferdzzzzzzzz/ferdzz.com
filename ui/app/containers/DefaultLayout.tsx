@@ -1,6 +1,7 @@
 import {PropsWithChildren} from 'react'
 import {styled} from '~/utils/stitches.config'
-import {MobileNavBar, TabletNavBar} from './Navbar'
+import {MobileNavBar} from './MobileNavbar'
+import {TabletNavBar} from './TabletNavbar'
 
 const Screen = styled('div', {
   height: '100vh',

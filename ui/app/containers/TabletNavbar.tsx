@@ -1,5 +1,4 @@
 import {
-  Cross1Icon,
   HamburgerMenuIcon,
   HomeIcon,
   InfoCircledIcon,
@@ -7,10 +6,8 @@ import {
 } from '@radix-ui/react-icons'
 import {PropsWithChildren} from 'react'
 import {Link, NavLink} from 'remix'
-import * as Dialog from '@radix-ui/react-dialog'
 import {css, styled} from '~/utils/stitches.config'
 import {blue} from '@radix-ui/colors'
-import {SrOnly} from '~/components/SrOnly'
 
 const TitleStyle = styled(Link, {
   fontWeight: 600,
@@ -18,85 +15,6 @@ const TitleStyle = styled(Link, {
 
 function Title() {
   return <TitleStyle to={'/'}>ferdzz.com</TitleStyle>
-}
-
-const DialogContent = styled(Dialog.Content, {
-  backgroundColor: 'white',
-  borderRadius: 6,
-  position: 'fixed',
-  top: '10%',
-  left: '50%',
-  transform: 'translate(-50%, 0%)',
-  width: '100vw',
-  height: '80vh',
-  maxHeight: '85vh',
-  padding: 25,
-  '&:focus': {outline: 'none'},
-})
-
-const MobileNavBarLayout = styled('div', {
-  height: '10vh',
-  borderBottomWidth: '1px',
-  justifyContent: 'space-between',
-  paddingLeft: '1rem',
-  paddingRight: '1rem',
-  alignItems: 'center',
-  display: 'flex',
-  '@sm': {
-    display: 'none',
-  },
-})
-
-const DialogTrigger = styled(HamburgerMenuIcon, {
-  height: '1.25rem',
-  width: '1.25rem',
-})
-
-const DialogHeader = styled('div', {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-})
-
-function MobileNavMenu() {
-  return (
-    <Dialog.Root>
-      <Dialog.Trigger>
-        <DialogTrigger />
-      </Dialog.Trigger>
-      <Dialog.Portal>
-        <DialogContent>
-          <DialogHeader>
-            <Title />
-            <Dialog.Close>
-              <Cross1Icon />
-            </Dialog.Close>
-          </DialogHeader>
-
-          <div>Some Links</div>
-
-          <SrOnly>
-            <Dialog.Title>navbar</Dialog.Title>
-          </SrOnly>
-
-          <SrOnly>
-            <Dialog.Description>
-              Navigate to different pages on the website.
-            </Dialog.Description>
-          </SrOnly>
-        </DialogContent>
-      </Dialog.Portal>
-    </Dialog.Root>
-  )
-}
-
-export function MobileNavBar() {
-  return (
-    <MobileNavBarLayout>
-      <Title />
-      <MobileNavMenu />
-    </MobileNavBarLayout>
-  )
 }
 
 const link = css({
