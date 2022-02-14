@@ -48,7 +48,7 @@ export default function App() {
 
         <ScrollRestoration />
         <Scripts />
-        {isDev() && <LiveReload />}
+        {isDev && <LiveReload />}
       </body>
     </html>
   )

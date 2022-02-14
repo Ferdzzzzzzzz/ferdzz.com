@@ -3,7 +3,7 @@ import {Link} from 'remix'
 import {isDev} from '~/utils/isDev'
 
 export function DevRoute({children}: PropsWithChildren<{}>) {
-  if (isDev()) return <div>{children}</div>
+  if (isDev) return <div>{children}</div>
 
   return (
     <div>
@@ -31,7 +31,7 @@ export function DevRoute({children}: PropsWithChildren<{}>) {
 }
 
 export function DevComponent({children}: PropsWithChildren<{}>) {
-  if (isDev()) return <div>{children}</div>
+  if (isDev) return <div>{children}</div>
 
   return null
 }

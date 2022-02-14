@@ -1,13 +1,7 @@
-import {
-  HamburgerMenuIcon,
-  HomeIcon,
-  InfoCircledIcon,
-  StackIcon,
-} from '@radix-ui/react-icons'
-import {PropsWithChildren} from 'react'
 import {Link, NavLink} from 'remix'
 import {css, styled} from '~/utils/stitches.config'
-import {blue} from '@radix-ui/colors'
+import {slateDark} from '@radix-ui/colors'
+import React from 'react'
 
 const TitleStyle = styled(Link, {
   fontWeight: 600,
@@ -23,56 +17,40 @@ const link = css({
   marginLeft: '2rem',
   fontSize: '0.875rem',
   lineHeight: '1.25rem',
-})
-
-const activeLink = css({
-  marginLeft: '2rem',
-  display: 'flex',
-  alignItems: 'center',
-  fontSize: '0.875rem',
-  lineHeight: '1.25rem',
-  color: blue.blue10,
-})
-
-const NavBarLink = function NavBarLink({
-  children,
-  to,
-}: PropsWithChildren<{to: string}>) {
-  return (
-    <NavLink
-      to={to}
-      className={({isActive}) => (isActive ? activeLink() : link())}
-    >
-      {children}
-    </NavLink>
-  )
-}
-
-const DesktopNavLinksLayout = styled('div', {
-  display: 'none',
-  '@lg': {
-    display: 'flex',
+  color: slateDark.slate11,
+  '&:hover': {
+    borderBottomWidth: 1,
+    borderColor: slateDark.slate11,
+  },
+  variants: {
+    isActive: {
+      true: {
+        color: slateDark.slate8,
+      },
+    },
   },
 })
 
-function DesktopNavLinks() {
-  return (
-    <DesktopNavLinksLayout>
-      <NavBarLink to="">
-        <HomeIcon />
-        <div>home</div>
-      </NavBarLink>
-      <NavBarLink to="about">
-        <InfoCircledIcon />
-        <div>about</div>
-      </NavBarLink>
-      <NavBarLink to="blog">
-        <StackIcon />
-        <div>blog</div>
-      </NavBarLink>
-    </DesktopNavLinksLayout>
-  )
-}
+const Nav = React.forwardRef<
+  React.ElementRef<typeof NavLink>,
+  React.ComponentProps<typeof NavLink>
+>(({children, ...props}, forwardedRef) => (
+  <NavLink
+    {...props}
+    className={({isActive}) => link({isActive})}
+    end
+    ref={forwardedRef}
+  >
+    {children}
+  </NavLink>
+))
+
+const DesktopNavLinksLayout = styled('div', {
+  display: 'none',
+  '@sm': {
+    display: 'flex',
+  },
+})
 
 const TabletNavBarLayout = styled('div', {
   height: '5vh',
@@ -95,11 +73,15 @@ const TabletNavBarContent = styled('div', {
   justifyContent: 'space-between',
 })
 
-const TabletNavMenu = styled(HamburgerMenuIcon, {
-  '@lg': {
-    display: 'none',
-  },
-})
+function DesktopNavLinks() {
+  return (
+    <DesktopNavLinksLayout>
+      <Nav to="">home</Nav>
+      <Nav to="about">about</Nav>
+      <Nav to="blog">blog</Nav>
+    </DesktopNavLinksLayout>
+  )
+}
 
 export function TabletNavBar() {
   return (
@@ -107,7 +89,6 @@ export function TabletNavBar() {
       <TabletNavBarContent>
         <Title />
         <DesktopNavLinks />
-        <TabletNavMenu />
       </TabletNavBarContent>
     </TabletNavBarLayout>
   )

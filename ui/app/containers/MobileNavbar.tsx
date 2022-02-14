@@ -1,6 +1,6 @@
 import {css, styled} from '~/utils/stitches.config'
 import {Link, NavLink} from 'remix'
-import {purple, slateDark, whiteA} from '@radix-ui/colors'
+import {purple, slate, slateDark, whiteA} from '@radix-ui/colors'
 import * as Popover from '@radix-ui/react-popover'
 import {HamburgerMenuIcon} from '@radix-ui/react-icons'
 import React, {useState} from 'react'
@@ -29,7 +29,7 @@ const MobileNavBarLayout = styled('div', {
 })
 
 const link = css({
-  color: slateDark.slate6,
+  color: slate.slate12,
   paddingLeft: '1rem',
   paddingRight: '1rem',
   paddingTop: '0.5rem',
@@ -37,8 +37,7 @@ const link = css({
   variants: {
     isActive: {
       true: {
-        backgroundColor: purple.purple3,
-        color: purple.purple12,
+        backgroundColor: slate.slate2,
       },
     },
   },
@@ -56,20 +55,20 @@ function Title() {
   return <TitleStyle to={'/'}>ferdzz.com</TitleStyle>
 }
 
-type NavProps = React.ComponentProps<typeof NavLink>
-
-const Nav = React.forwardRef<React.ElementRef<typeof Popover.Close>, NavProps>(
-  ({children, ...props}, forwardedRef) => (
-    <NavLink
-      {...props}
-      className={({isActive}) => link({isActive})}
-      end
-      onClick={props.onClick}
-    >
-      {children}
-    </NavLink>
-  ),
-)
+const Nav = React.forwardRef<
+  React.ElementRef<typeof NavLink>,
+  React.ComponentProps<typeof NavLink>
+>(({children, ...props}, forwardedRef) => (
+  <NavLink
+    {...props}
+    className={({isActive}) => link({isActive})}
+    end
+    onClick={props.onClick}
+    ref={forwardedRef}
+  >
+    {children}
+  </NavLink>
+))
 
 export function MobileNavBar() {
   let [open, setOpen] = useState(false)

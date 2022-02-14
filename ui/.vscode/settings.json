@@ -19,5 +19,6 @@
         "tsconfig.json": true,
         "remix.env.d.ts": true,
         ".prettierrc": true,
-    }
+    },
+    "editor.gotoLocation.multipleDefinitions": "goto"
 }
