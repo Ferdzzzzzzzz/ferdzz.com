@@ -1,12 +1,10 @@
 {
   "private": true,
-  "name": "remix-app-template",
-  "description": "",
-  "license": "",
+  "name": "ferdzz.com",
   "scripts": {
     "build:css": "tailwindcss -o ./app/tailwind.css",
     "dev:css": "tailwindcss -o ./app/tailwind.css --watch",
-    "build": "remix build",
+    "build": "set NODE_ENV=development && remix build",
     "dev": "remix dev",
     "start": "remix-serve build"
   },
