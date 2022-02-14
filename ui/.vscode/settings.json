@@ -13,7 +13,7 @@
         "**/lib": true,
         "**/.gitignore": true,
         "**/node_modules": true,
-        "**/build": true,
+        "**/build": false,
         "**/.cache": true,
         "package-lock.json": true,
         "tsconfig.json": true,
