@@ -1,9 +1,16 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 )
+
+// build is the git version of this program. It is set using build flags in the makefile.
+var build = "develop"
+var dateSA = "build_date"
+var dateUTC = "build_date"
+var semver = "semver"
 
 func main() {
 	server := http.Server{
@@ -19,7 +26,26 @@ func main() {
 			}
 
 			fmt.Println("serving this")
-			fmt.Fprint(w, "<h1>Ferdzz is trying Fly</h1><p>Hello Stefan</p>")
+
+			out := struct {
+				Build        string
+				BuildDateSA  string
+				BuildDateUTC string
+				Version      string
+			}{
+				Build:        build,
+				BuildDateSA:  dateSA,
+				BuildDateUTC: dateUTC,
+				Version:      semver,
+			}
+
+			jsonOut, err := json.Marshal(&out)
+
+			if err != nil {
+				fmt.Fprintf(w, "err: %s", err.Error())
+			} else {
+				fmt.Fprint(w, string(jsonOut))
+			}
 
 		}),
 	}

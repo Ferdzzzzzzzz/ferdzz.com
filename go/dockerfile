@@ -2,6 +2,9 @@
 FROM golang:1.17 as build
 ENV CGO_ENABLED 0
 ARG VCS_REF
+ARG BUILD_DATE_UTC
+ARG BUILD_DATE_SA
+ARG SEMVER
 
 # Create the service directory and the copy the module files first and then
 # download the dependencies. If this doesn't change, we won't need to do this
@@ -17,7 +20,7 @@ COPY . /service
 # Build the service binary. We are doing this last since this will be different
 # every time we run through this process.
 WORKDIR /service/apps/api
-RUN go build -o ferdzz-api -ldflags "-X main.build=${VCS_REF}"
+RUN go build -o ferdzz-api -ldflags "-X main.build=${VCS_REF} -X main.dateUTC=${BUILD_DATE_UTC} -X main.dateSA=${BUILD_DATE_SA} -X main.semver=${SEMVER}"
 
 
 # ==============================================================================
@@ -30,6 +33,6 @@ WORKDIR /service
 EXPOSE 4000
 CMD ["./ferdzz-api"]
 
-LABEL org.opencontainers.image.created="${BUILD_DATE}" \
+LABEL org.opencontainers.image.created="${BUILD_DATE_UTC}" \
     org.opencontainers.image.title="ferdzz_api" \
     org.opencontainers.image.revision="${VCS_REF}"

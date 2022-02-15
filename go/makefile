@@ -29,6 +29,8 @@ build-api-container:
 	@docker build \
 		-f ./dockerfile \
 		--build-arg VCS_REF=`git rev-parse --short HEAD` \
+		--build-arg BUILD_DATE=`date -u +"%Y-%m-%d/%H:%M:%S/%Z"` \
+		--build-arg SEMVER=$(SEMVER) \
 		-t ferdzz_api:0.0.1 \
 		.
 
@@ -45,7 +47,6 @@ run-api-container:
 
 # -e API_PORT=4000 \
 
-
 # Latch into a container with a shell. Convenient for debugging container builds
 debug-container:
 	docker run -ti --rm ferdzz_api:0.0.1 sh
@@ -59,6 +60,8 @@ upload-container:
 # https://docs.aws.amazon.com/general/latest/gr/aws-sec-cred-types.html#access-keys-and-secret-access-keys
 # https://docs.docker.com/cloud/ecs-integration/
 
-deploy:
-	@fly deploy
-
+# deploy:
+# 	@fly deploy \
+# 	--build-arg VCS_REF=`git rev-parse --short HEAD` \
+# 	--build-arg BUILD_DATE=`date -u +"%Y-%m-%d/%H:%M:%S/%Z"` \
+# 	--build-arg SEMVER=$(SEMVER) \
