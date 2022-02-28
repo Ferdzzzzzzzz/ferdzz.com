@@ -7,6 +7,7 @@ import {
   Button,
   Container,
   Flex,
+  Gap,
   Heading,
   Sheet,
   SheetContent,
@@ -72,7 +73,8 @@ function SheetNavs({children}: PropsWithChildren<{}>) {
           <HamburgerMenuIcon />
         </SheetTrigger>
         <SheetContent>
-          <Flex direction="column" gap="4">
+          <Gap height="8" />
+          <Flex direction="column" gap="4" style={{backgroundColor: 'blue'}}>
             {children}
           </Flex>
         </SheetContent>
