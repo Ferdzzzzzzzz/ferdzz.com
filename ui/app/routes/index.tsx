@@ -1,15 +1,20 @@
+import {Container, Panel, Paragraph, Section} from '~/components'
 import {styled} from '~/utils/stitches.config'
 
-const Layout = styled('div', {
-  display: 'absolute',
-  left: '50%',
-  top: '50%',
-  transform: '-translateX(50%) -translateY(50%)',
-  padding: '2.5rem',
+const StyledPanel = styled(Panel, {
+  p: '$4',
 })
 
 export default function Index() {
   return (
-    <Layout>Welcome to my new site! I'm working on some cool things 🔥 </Layout>
+    <Section>
+      <Container size="1">
+        <StyledPanel>
+          <Paragraph>
+            Welcome to my new site! I'm working on some cool things 🔥
+          </Paragraph>
+        </StyledPanel>
+      </Container>
+    </Section>
   )
 }

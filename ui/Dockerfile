@@ -1,60 +1,36 @@
-# base node image
-FROM node:16-bullseye-slim as base
-
-# Install openssl for Prisma
-RUN apt-get update && apt-get install -y openssl
-
-# Install all node_modules, including dev dependencies
-FROM base as deps
+# build app
+# ==============================================================================
+FROM node:16 as build
 
 RUN mkdir /app
 WORKDIR /app
 
-ADD package.json package-lock.json ./
-RUN npm install --production=false
+COPY package.json remix.config.js /app/
 
-# Setup production node_modules
-FROM base as production-deps
+RUN npm install
 
-RUN mkdir /app
-WORKDIR /app
+COPY public ./public
+COPY app ./app
+COPY tsconfig.json ./tsconfig.json
 
-COPY --from=deps /app/node_modules /app/node_modules
-ADD package.json package-lock.json ./
+RUN npm run build
 RUN npm prune --production
 
-# Build the app
-FROM base as build
 
-ENV NODE_ENV=production
+# production container
+# ==============================================================================
+# FROM node:16-bullseye-slim
 
-RUN mkdir /app
-WORKDIR /app
+# ENV NODE_ENV=production
 
-COPY --from=deps /app/node_modules /app/node_modules
+# RUN mkdir /app
+# WORKDIR /app
 
-# If we're using Prisma, uncomment to cache the prisma schema
-# ADD prisma .
-# RUN npx prisma generate
+# COPY package.json package-lock.json ./
+# RUN npm install --production
+# COPY --from=build /app/build /app/build
+# COPY --from=build /app/public /app/public
 
-ADD . .
-RUN npm run build
+# EXPOSE 3000
 
-# Finally, build the production image with minimal footprint
-FROM base
-
-ENV NODE_ENV=production
-
-RUN mkdir /app
-WORKDIR /app
-
-COPY --from=production-deps /app/node_modules /app/node_modules
-
-# Uncomment if using Prisma
-# COPY --from=build /app/node_modules/.prisma /app/node_modules/.prisma
-
-COPY --from=build /app/build /app/build
-COPY --from=build /app/public /app/public
-ADD . .
-
-CMD ["npm", "run", "start"]
+# CMD ["npm", "run", "start"]

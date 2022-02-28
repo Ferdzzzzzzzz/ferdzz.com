@@ -1,7 +1,6 @@
 import {PropsWithChildren} from 'react'
 import {styled} from '~/utils/stitches.config'
-import {MobileNavBar} from './MobileNavbar'
-import {TabletNavBar} from './TabletNavbar'
+import {Navbar} from './Navbar'
 
 const Screen = styled('div', {
   height: '100vh',
@@ -14,8 +13,7 @@ const Content = styled('div', {
 export function DefaultLayout({children}: PropsWithChildren<{}>) {
   return (
     <Screen>
-      <MobileNavBar />
-      <TabletNavBar />
+      <Navbar />
       <Content>{children}</Content>
     </Screen>
   )

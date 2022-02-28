@@ -19,11 +19,17 @@ func main() {
 
 			fmt.Println(r.Header.Get("X-Forwarded-Proto"))
 
-			if r.Header.Get("X-Forwarded-Proto") == "http" {
-				fmt.Println("redirect")
+			fmt.Println("=========================================")
+			fmt.Println(r.Proto)
+			if r.Proto == "http" {
 				http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
 				return
 			}
+
+			// if r.Header.Get("X-Forwarded-Proto") == "http" {
+			// 	http.Redirect(w, r, "https://"+r.Host+r.RequestURI, http.StatusMovedPermanently)
+			// 	return
+			// }
 
 			fmt.Println("serving this")
 

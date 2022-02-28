@@ -9,13 +9,16 @@ import {
   ScrollRestoration,
 } from 'remix'
 import type {MetaFunction} from 'remix'
-import styles from './tailwind.css'
-import {isDev} from './utils/isDev'
+import styles from './tailwindPreflight.css'
+import styles2 from './modulzStyles.css'
+import {isDev} from '~/utils/isDev'
 import {DefaultLayout} from './containers/DefaultLayout'
-import {getCssText} from './utils/stitches.config'
 
 export function links() {
-  return [{rel: 'stylesheet', href: styles}]
+  return [
+    {rel: 'stylesheet', href: styles},
+    {rel: 'stylesheet', href: styles2},
+  ]
 }
 
 export const meta: MetaFunction = () => {
