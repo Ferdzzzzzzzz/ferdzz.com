@@ -1,7 +1,7 @@
 import {slate} from '@radix-ui/colors'
 import {HamburgerMenuIcon} from '@radix-ui/react-icons'
 import React, {PropsWithChildren} from 'react'
-import {NavLink} from 'remix'
+import {Link, NavLink} from 'remix'
 import {
   AppBar,
   Button,
@@ -57,18 +57,27 @@ const NavbarNavs = styled(Flex, {
   },
 })
 
+const MobileOnly = styled('div', {
+  display: 'block',
+  '@bp1': {
+    display: 'none',
+  },
+})
+
 function SheetNavs({children}: PropsWithChildren<{}>) {
   return (
-    <Sheet>
-      <SheetTrigger>
-        <HamburgerMenuIcon />
-      </SheetTrigger>
-      <SheetContent>
-        <Flex direction="column" gap="4">
-          {children}
-        </Flex>
-      </SheetContent>
-    </Sheet>
+    <MobileOnly>
+      <Sheet>
+        <SheetTrigger>
+          <HamburgerMenuIcon />
+        </SheetTrigger>
+        <SheetContent>
+          <Flex direction="column" gap="4">
+            {children}
+          </Flex>
+        </SheetContent>
+      </Sheet>
+    </MobileOnly>
   )
 }
 
@@ -77,7 +86,9 @@ export function Navbar() {
     <AppBar size="3" border glass sticky>
       <Container size="2">
         <Flex justify="between" align="center">
-          <Heading>ferdzz.com</Heading>
+          <Link to="/">
+            <Heading>ferdzz.com</Heading>
+          </Link>
           <SheetNavs>
             <SheetNav to="">home</SheetNav>
             <SheetNav to="about">about</SheetNav>
