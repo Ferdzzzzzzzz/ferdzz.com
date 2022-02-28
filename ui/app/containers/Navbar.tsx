@@ -74,7 +74,7 @@ function SheetNavs({children}: PropsWithChildren<{}>) {
         </SheetTrigger>
         <SheetContent>
           <Gap height="8" />
-          <Flex direction="column" gap="4" style={{backgroundColor: 'blue'}}>
+          <Flex direction="column" gap="4">
             {children}
           </Flex>
         </SheetContent>

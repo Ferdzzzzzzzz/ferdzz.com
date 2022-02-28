@@ -1,8 +1,8 @@
 # base node image
 FROM node:16-bullseye-slim as base
 
-# build app
 # ==============================================================================
+# build
 FROM base as build
 
 RUN mkdir /ferdzz
@@ -13,11 +13,8 @@ COPY package-lock.json .
 COPY app ./app
 COPY public ./public
 COPY remix.config.js .
-COPY stitches.config.ts .
 COPY tsconfig.json .
 COPY remix.env.d.ts .
-
-RUN npm install
 
 RUN npm install --production=false
 
@@ -27,8 +24,8 @@ RUN npm run build
 RUN npm prune --production
 
 
-# production container
 # ==============================================================================
+# production
 FROM base
 
 ENV NODE_ENV=production
@@ -43,4 +40,4 @@ COPY --from=build /ferdzz/public /ferdzz/public
 COPY remix.config.js .
 COPY package.json .
 
-CMD ["npm", "run", "start"]%
+CMD ["npm", "run", "start"]
