@@ -4,10 +4,10 @@ import React, {PropsWithChildren} from 'react'
 import {Link, NavLink} from 'remix'
 import {
   AppBar,
+  Box,
   Button,
   Container,
   Flex,
-  Gap,
   Heading,
   Sheet,
   SheetContent,
@@ -73,7 +73,7 @@ function SheetNavs({children}: PropsWithChildren<{}>) {
           <HamburgerMenuIcon />
         </SheetTrigger>
         <SheetContent>
-          <Gap height="8" />
+          <Box css={{height: '$6'}} />
           <Flex direction="column" gap="4">
             {children}
           </Flex>
