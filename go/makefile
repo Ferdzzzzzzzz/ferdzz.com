@@ -6,7 +6,9 @@
 .DEFAULT_GOAL := run
 .PHONY: run
 run:
-	@go run ./apps/api -dev
+	@go run ./apps/webapp
+
+
 
 test:
 	@go test ./... --short

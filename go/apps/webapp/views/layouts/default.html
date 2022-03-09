@@ -1,0 +1,16 @@
+{{define "default"}}
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>ferdzz.com</title>
+    <link href="styles.css" rel="stylesheet" />
+  </head>
+  <body>
+    Default Layout! {{template "yield" .}}
+  </body>
+
+  <script>
+    let ws = new WebSocket("https://localhost:4000/collab");
+  </script>
+</html>
+{{end}}

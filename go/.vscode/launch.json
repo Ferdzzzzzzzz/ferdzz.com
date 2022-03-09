@@ -23,6 +23,16 @@
             "env": {
                 //   "MERCHANT_DATASTORE_USE_LOCAL_EMULATOR": true
             }
+        },
+        {
+            "type": "go",
+            "request": "launch",
+            "name": "Debug WebApp",
+            "mode": "debug",
+            "program": "${workspaceFolder}/apps/webapp/main.go",
+            "env": {
+                "TEMPLATE_VIEWS_DIR": "${workspaceFolder}/apps/webapp/views/"
+            }
         }
     ]
 }
