@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 
 	view "github.com/ferdzzzzzzzz/ferdzz.com/go/apps/webapp/views"
-	"github.com/ferdzzzzzzzz/ferdzz.com/go/core/u"
 )
 
 var viewPath = "./apps/webapp/views/"
-var layoutPath = viewPath + "layouts/"
+var staticFilePath = "./apps/webapp/public/"
 
 const port = ":80"
 
@@ -22,24 +22,43 @@ func main() {
 	tempTemplateDir := os.Getenv("TEMPLATE_VIEWS_DIR")
 	if tempTemplateDir != "" {
 		viewPath = tempTemplateDir
-		layoutPath = viewPath + "layouts/"
 	}
 
-	homeView = view.NewView(layoutPath, "default", viewPath+"home.html")
-	contactView = view.NewView(layoutPath, "default", viewPath+"contact.html")
-	notFoundView = view.NewView(layoutPath, "default", viewPath+"notFound.html")
+	homeView = view.NewView(viewPath, "default", viewPath+"home.html")
+	contactView = view.NewView(viewPath, "default", viewPath+"contact.html")
+	notFoundView = view.NewView(viewPath, "default", viewPath+"notFound.html")
 
 	fmt.Printf("listening on port %s\n", port)
 
+	app := NewApp(staticFilePath)
+
 	server := http.Server{
 		Addr:    port,
-		Handler: http.HandlerFunc(router),
+		Handler: app,
 	}
 
 	server.ListenAndServe()
 }
 
-func router(w http.ResponseWriter, r *http.Request) {
+func NewApp(staticFilePath string) app {
+	fs := http.FileServer(http.Dir(staticFilePath))
+	fs = http.StripPrefix("/public/", fs)
+
+	return app{
+		fileServer: fs,
+	}
+}
+
+type app struct {
+	fileServer http.Handler
+}
+
+func (a app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	if strings.HasPrefix(r.URL.Path, "/public") {
+		a.fileServer.ServeHTTP(w, r)
+		return
+	}
+
 	switch r.URL.Path {
 	case "/":
 		home(w, r)
@@ -48,28 +67,21 @@ func router(w http.ResponseWriter, r *http.Request) {
 	default:
 		notFound(w, r)
 	}
-
 }
 
 func home(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	err := homeView.Template.ExecuteTemplate(w, homeView.Layout, struct{ Name string }{
+	homeView.Render(w, struct{ Name string }{
 		Name: "Yass",
 	})
-
-	u.PanicIfErr(err)
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	err := contactView.Template.ExecuteTemplate(w, contactView.Layout, nil)
-
-	u.PanicIfErr(err)
+	contactView.Render(w, nil)
 }
 
 func notFound(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "text/html")
-	err := notFoundView.Template.ExecuteTemplate(w, notFoundView.Layout, nil)
-
-	u.PanicIfErr(err)
+	notFoundView.Render(w, nil)
 }

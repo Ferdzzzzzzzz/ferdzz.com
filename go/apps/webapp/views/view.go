@@ -2,26 +2,41 @@ package view
 
 import (
 	"html/template"
+	"net/http"
+	"path/filepath"
 
 	"github.com/ferdzzzzzzzz/ferdzz.com/go/core/u"
 )
 
+const (
+	LayoutDir   = "layouts/"
+	TemplateExt = ".html"
+)
+
 type View struct {
-	Template *template.Template
-	Layout   string
+	template *template.Template
+	layout   string
 }
 
-func NewView(layoutPath, layout string, files ...string) *View {
-	files = append(
-		files,
-		layoutPath+"footer.html",
-		layoutPath+"default.html",
-	)
+func (v View) Render(w http.ResponseWriter, data interface{}) {
+	err := v.template.ExecuteTemplate(w, v.layout, data)
+	u.PanicIfErr(err)
+}
+
+func NewView(uiPath, layout string, files ...string) *View {
+	files = append(files, layoutFiles(uiPath)...)
 	t, err := template.ParseFiles(files...)
 	u.PanicIfErr(err)
 
 	return &View{
-		Template: t,
-		Layout:   layout,
+		template: t,
+		layout:   layout,
 	}
+}
+
+func layoutFiles(uiDir string) []string {
+	files, err := filepath.Glob(uiDir + LayoutDir + "*" + TemplateExt)
+	u.PanicIfErr(err)
+
+	return files
 }

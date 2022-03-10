@@ -16,6 +16,9 @@ test:
 build:
 	@go build ./app
 
+style:
+	@npx tailwindcss -o ./apps/webapp/public/tailwind.css --watch
+
 
 # requires some services to be running, be aware that these tests might do some 
 # random stuff, like drop everything in your db and refill with test data.

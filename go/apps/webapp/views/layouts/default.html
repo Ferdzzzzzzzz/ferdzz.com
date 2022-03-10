@@ -3,14 +3,11 @@
 <html lang="en">
   <head>
     <title>ferdzz.com</title>
-    <link href="styles.css" rel="stylesheet" />
+    <link href="/public/tailwind.css" rel="stylesheet" />
   </head>
   <body>
-    Default Layout! {{template "yield" .}}
+    <div>Default Layout!</div>
+    {{template "yield" .}}
   </body>
-
-  <script>
-    let ws = new WebSocket("https://localhost:4000/collab");
-  </script>
 </html>
-{{end}}
+{{template "footer"}} {{end}}
