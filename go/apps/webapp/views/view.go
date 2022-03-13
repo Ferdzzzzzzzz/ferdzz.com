@@ -23,6 +23,11 @@ func (v View) Render(w http.ResponseWriter, data interface{}) {
 	u.PanicIfErr(err)
 }
 
+func (v View) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "text/html")
+	v.Render(w, nil)
+}
+
 func NewView(uiPath, layout string, files ...string) *View {
 	files = append(files, layoutFiles(uiPath)...)
 	t, err := template.ParseFiles(files...)

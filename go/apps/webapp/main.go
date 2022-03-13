@@ -14,9 +14,12 @@ var staticFilePath = "./apps/webapp/public/"
 
 const port = ":80"
 
-var homeView *view.View
-var contactView *view.View
-var notFoundView *view.View
+var (
+	homeView     *view.View
+	contactView  *view.View
+	signupView   *view.View
+	notFoundView *view.View
+)
 
 func main() {
 	tempTemplateDir := os.Getenv("TEMPLATE_VIEWS_DIR")
@@ -26,6 +29,7 @@ func main() {
 
 	homeView = view.NewView(viewPath, "default", viewPath+"home.html")
 	contactView = view.NewView(viewPath, "default", viewPath+"contact.html")
+	signupView = view.NewView(viewPath, "default", viewPath+"signup.html")
 	notFoundView = view.NewView(viewPath, "default", viewPath+"notFound.html")
 
 	fmt.Printf("listening on port %s\n", port)
@@ -64,6 +68,8 @@ func (a app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		home(w, r)
 	case "/contact":
 		contact(w, r)
+	case "/signup":
+		signup(w, r)
 	default:
 		notFound(w, r)
 	}
@@ -74,6 +80,31 @@ func home(w http.ResponseWriter, r *http.Request) {
 	homeView.Render(w, struct{ Name string }{
 		Name: "Yass",
 	})
+}
+
+func signup(w http.ResponseWriter, r *http.Request) {
+	if r.Method == http.MethodPost {
+		fmt.Println("Hear you loud and clear")
+
+		err := r.ParseForm()
+		if err != nil {
+			fmt.Println(err)
+			return
+		}
+
+		w.WriteHeader(302)
+
+		w.Header().Add("Path", "/about")
+
+		// fmt.Fprint(w, "<p>ja ja</p>")
+
+		fmt.Println(r.PostForm)
+
+	} else if r.Method == http.MethodGet {
+		w.Header().Set("Content-Type", "text/html")
+		signupView.Render(w, nil)
+	}
+
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {

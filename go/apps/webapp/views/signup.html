@@ -1,0 +1,24 @@
+{{define "yield"}}
+<form method="post">
+  <input
+    class="border rounded block"
+    placeholder="email"
+    required
+    type="email"
+    name="Email"
+  />
+  <input
+    class="border rounded block mt-4"
+    type="password"
+    required
+    placeholder="password"
+    name="Password"
+  />
+  <button
+    class="block rounded mt-8 border border-blue-800 bg-blue-200 text-blue-800 hover:bg-blue-800 hover:text-blue-200 transition-colors px-4 py-2"
+    type="submit"
+  >
+    Sign Up
+  </button>
+</form>
+{{end}}
