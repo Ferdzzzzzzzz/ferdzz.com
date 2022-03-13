@@ -84,7 +84,6 @@ func home(w http.ResponseWriter, r *http.Request) {
 
 func signup(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodPost {
-		fmt.Println("Hear you loud and clear")
 
 		err := r.ParseForm()
 		if err != nil {
@@ -96,15 +95,22 @@ func signup(w http.ResponseWriter, r *http.Request) {
 
 		w.Header().Add("Path", "/about")
 
-		// fmt.Fprint(w, "<p>ja ja</p>")
+		fmt.Fprint(w, "<p>ja ja</p>")
 
-		fmt.Println(r.PostForm)
+		formData := struct {
+			Email    string `validate:"require,email"`
+			Password string `validate:"require"`
+		}{
+			Email:    r.PostForm.Get("Email"),
+			Password: r.PostForm.Get("Password"),
+		}
+
+		fmt.Println(formData)
 
 	} else if r.Method == http.MethodGet {
 		w.Header().Set("Content-Type", "text/html")
-		signupView.Render(w, nil)
+		signupView.Render(w, struct{ MyVal string }{})
 	}
-
 }
 
 func contact(w http.ResponseWriter, r *http.Request) {
