@@ -3,10 +3,12 @@
 package main
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"time"
 
+	"github.com/ferdzzzzzzzz/ferdzz.com/go/core/rand"
 	"github.com/go-playground/validator/v10"
 
 	"github.com/magefile/mage/sh"
@@ -93,4 +95,22 @@ func Date() {
 	buildDateSaArg := fmt.Sprintf("BUILD_DATE_SA=%s", now.Local().Format("2006-Jan-01/15:04:05/MST"))
 	fmt.Println(buildDateSaArg)
 	fmt.Println(buildDateUtcArg)
+}
+
+func Rand() error {
+	rndm, err := rand.Bytes(32)
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(string(rndm))
+	x := base64.URLEncoding.EncodeToString(rndm)
+	fmt.Println(x)
+
+	y, err := base64.URLEncoding.DecodeString(x)
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(y))
+	return nil
 }

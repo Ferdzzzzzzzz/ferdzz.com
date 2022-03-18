@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/go-playground/validator/v10 v10.10.0
+	github.com/google/uuid v1.3.0
 	github.com/magefile/mage v1.12.1
 	golang.org/x/crypto v0.0.0-20210711020723-a769d52b0f97
 )

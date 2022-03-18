@@ -66,6 +66,8 @@ func (a app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/":
 		home(w, r)
+	case "/blog":
+		blog(w, r)
 	case "/contact":
 		contact(w, r)
 	case "/signup":
@@ -80,6 +82,11 @@ func home(w http.ResponseWriter, r *http.Request) {
 	homeView.Render(w, struct{ Name string }{
 		Name: "Yass",
 	})
+}
+
+func blog(w http.ResponseWriter, r *http.Request) {
+
+	http.Redirect(w, r, "/wut", http.StatusMovedPermanently)
 }
 
 func signup(w http.ResponseWriter, r *http.Request) {
