@@ -6,12 +6,14 @@
     <div>
       <h2 class="text-xl">Me</h2>
       <p class="mt-4">
-        I have some thoughts on software and people. My goal is to leverage
-        these to help shape the future of education in South Africa. Maybe I'll
-        even get around to writing on these topics.
+        I have some thoughts on software, web development and people. My goal is
+        to give the right people software that'll help them shape the future of
+        education in South Africa.
       </p>
-
-      <div class="flex gap-4 mt-4">
+      <br />
+      <p>I try to find time to write on these topics.</p>
+      <br />
+      <div class="flex gap-4">
         <a
           class="border rounded transition-shadow hover:shadow-sm px-4 py-2 font-light"
           href="/signup"
@@ -43,47 +45,19 @@
     <div>
       <h2 class="text-xl">Writing</h2>
       <ul class="space-y-4 mt-4">
+        {{range .Posts}}
         <li
           class="border rounded p-4 hover:cursor-pointer transition-shadow hover:shadow-sm"
         >
-          <a href="/postID">
+          <a href="/post/{{.ID}}">
             <div class="flex justify-between">
-              <p class="text-lg">Some Post about Something</p>
-              <p class="text-xs text-slate-600">15/03/2022</p>
+              <p class="text-lg">{{.Title}}</p>
+              <p class="text-xs text-slate-600">{{.Date}}</p>
             </div>
-            <p class="text-slate-600 text-sm">
-              This describes the post in slightly more detail.
-            </p>
+            <p class="text-slate-600 text-sm">{{.Description}}</p>
           </a>
         </li>
-        <li
-          class="border rounded p-4 hover:cursor-pointer transition-shadow hover:shadow-sm"
-        >
-          <a href="/postID2">
-            <div class="flex justify-between">
-              <p>Some other Post</p>
-              <p class="text-xs text-slate-600">15/03/2022</p>
-            </div>
-            <p>
-              This is a lorem ipsum type thing that says some things about the
-              thing
-            </p>
-          </a>
-        </li>
-        <li
-          class="border rounded p-4 hover:cursor-pointer transition-shadow hover:shadow-sm"
-        >
-          <a href="/postID2">
-            <div class="flex justify-between">
-              <p>Some other Post</p>
-              <p class="text-xs text-slate-600">15/03/2022</p>
-            </div>
-            <p>
-              This is a lorem ipsum type thing that says some things about the
-              thing
-            </p>
-          </a>
-        </li>
+        {{end}}
       </ul>
       <div class="cursor-pointer mt-4">
         <a href="writing">more...</a>

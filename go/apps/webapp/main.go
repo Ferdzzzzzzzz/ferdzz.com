@@ -77,11 +77,42 @@ func (a app) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+type Post struct {
+	ID          string
+	Title       string
+	Date        string
+	Description string
+}
+
+type homePage struct {
+	Posts []Post
+}
+
 func home(w http.ResponseWriter, r *http.Request) {
+	homePage := homePage{
+		Posts: []Post{{
+			ID:          "1234",
+			Title:       "From the server!!!",
+			Date:        "15/03/2022",
+			Description: "This describes the post in slightly more detail.",
+		},
+			{
+				ID:          "2345",
+				Title:       "Some other Post",
+				Date:        "12/03/2022",
+				Description: "This is a lorem ipsum type thing that says some things about the thing",
+			},
+			{
+				ID:          "3456",
+				Title:       "Some other Post",
+				Date:        "01/03/2022",
+				Description: "This is a lorem ipsum type thing that says some things about the thing",
+			},
+		},
+	}
+
 	w.Header().Set("Content-Type", "text/html")
-	homeView.Render(w, struct{ Name string }{
-		Name: "Yass",
-	})
+	homeView.Render(w, homePage)
 }
 
 func blog(w http.ResponseWriter, r *http.Request) {

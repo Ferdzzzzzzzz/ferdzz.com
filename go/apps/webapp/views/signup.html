@@ -1,25 +1,91 @@
 {{define "yield"}}
-<form method="post">
-  <input
-    class="border rounded block"
-    placeholder="email"
-    required
-    value="{{.MyVal}}"
-    type="email"
-    name="Email"
-  />
-  <input
-    class="border rounded block mt-4"
-    type="password"
-    required
-    placeholder="password"
-    name="Password"
-  />
-  <button
-    class="block rounded mt-8 border border-blue-800 bg-blue-200 text-blue-800 hover:bg-blue-800 hover:text-blue-200 transition-colors px-4 py-2"
-    type="submit"
-  >
-    Sign Up
-  </button>
-</form>
+<div class="container mx-auto max-w-xs min-w-max border rounded">
+  <div class="flex">
+    <button id="tablink-signin" onclick="openTab(event, 'signin')">
+      Email
+    </button>
+
+    <button id="tablink-signup" onclick="openTab(event, 'signup')">Link</button>
+  </div>
+
+  <form method="post" class="p-4 mt-4 space-y-4">
+    <div>
+      <label class="text-xs text-slate-500">
+        Email
+        <input
+          class="border rounded block p-1 w-full"
+          required
+          value="{{.MyVal}}"
+          type="email"
+          name="Email"
+        />
+      </label>
+    </div>
+
+    <div id="tabcontent-signin">
+      <div>
+        <label class="text-xs text-slate-500">
+          Password
+          <input
+            class="border rounded block p-1 w-full"
+            type="password"
+            required
+            name="Password"
+          />
+        </label>
+      </div>
+    </div>
+
+    <div id="tabcontent-signup">
+      <input type="hidden" name="_action" value="link" />
+    </div>
+
+    <div class="mt-8">
+      <button
+        class="border rounded transition-shadow hover:shadow-sm px-4 py-2 font-light w-full text-slate-800 flex justify-center"
+        type="submit"
+      >
+        Send Link
+      </button>
+    </div>
+  </form>
+</div>
+<script>
+  const tabLinkSignin = "tablink-signin";
+  const tabLinkSignup = "tablink-signup";
+
+  const tabContentSignin = "tabcontent-signin";
+  const tabContentSignup = "tabcontent-signup";
+
+  const signinContent = document.getElementById(tabContentSignin);
+  const signupContent = document.getElementById(tabContentSignup);
+  const signinLink = document.getElementById(tabLinkSignin);
+  const signupLink = document.getElementById(tabLinkSignup);
+
+  const signinLinkNotSelectedStyle =
+    "border-r border-b bg-slate-100 hover:bg-slate-50 w-1/2 py-2 transition-colors duration-200";
+  const signupLinkNotSelectedStyle =
+    "border-l border-b bg-slate-100 hover:bg-slate-50 w-1/2 py-2 transition-colors duration-200";
+  const selectedStyle = "w-1/2";
+
+  signinContent.className = "block";
+  signupContent.className = "hidden";
+  signinLink.className = selectedStyle;
+
+  signupLink.className = signupLinkNotSelectedStyle;
+
+  function openTab(evt, tabName) {
+    if (tabName === "signin") {
+      signinContent.className = "block";
+      signupContent.className = "hidden";
+      signinLink.className = selectedStyle;
+      signupLink.className = signupLinkNotSelectedStyle;
+    } else {
+      signinContent.className = "hidden";
+      signupContent.className = "block";
+      signinLink.className = signinLinkNotSelectedStyle;
+      signupLink.className = selectedStyle;
+    }
+  }
+</script>
 {{end}}
