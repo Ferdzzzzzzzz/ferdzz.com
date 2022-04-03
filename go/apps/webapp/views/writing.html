@@ -1,0 +1,22 @@
+{{define "yield"}}
+<main>
+  <div class="container max-w-xl mx-auto">
+    <h2 class="text-xl">Writing</h2>
+    <ul class="space-y-4 mt-4">
+      {{range .Posts}}
+      <li
+        class="border rounded p-4 hover:cursor-pointer transition-shadow hover:shadow-sm"
+      >
+        <a href="/post/{{.ID}}">
+          <div class="flex justify-between">
+            <p class="text-lg">{{.Title}}</p>
+            <p class="text-xs text-slate-600">{{.Date}}</p>
+          </div>
+          <p class="text-slate-600 text-sm">{{.Description}}</p>
+        </a>
+      </li>
+      {{end}}
+    </ul>
+  </div>
+</main>
+{{end}}

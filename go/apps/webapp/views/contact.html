@@ -1,3 +1,16 @@
-{{define "yield"}} To get in touch, please send an email to
-<a href="mailto:ferdz.steenkamp@gmail.com"> ferdz.steenkamp@gmail.com </a>
+{{define "yield"}}
+<main class="container max-w-lg mx-auto">
+  <div
+    class="border p-4 border-gray-300 rounded-lg shadow-sm overflow-hidden focus:border-pink-500 focus:ring-1 focus:ring-pink-500"
+  >
+    <label for="comment" class="sr-only">Add your comment</label>
+    <textarea
+      rows="3"
+      name="comment"
+      id="comment"
+      class="block w-full py-3 border-0 resize-none focus:ring-0 sm:text-sm"
+      placeholder="Add your comment..."
+    ></textarea>
+  </div>
+</main>
 {{end}}
